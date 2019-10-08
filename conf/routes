@@ -1,0 +1,28 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# An example controller showing a sample home page
+
+
+# An example controller showing a sample home page
++ noJwtFilter
+GET /api/authenticate/   controllers.HomeController.authenticate(request: Request)
+
+#+ noJwtFilter
+#GET    /requires-jwt    controllers.DashboardControllers.requiresJwt
+#
+#GET     /requires-jwt-via-filter    controllers.DashboardControllers.requiresJwtViaFilter
+
+# Map static resources from the /public folder to the /assets URL path
+#GET     /assets/*file     controllers.Assets.versioned(path="/public", file: Asset)
+
+#GET     /      controllers.HomeController.index
+
+POST /api/dashboard/    controllers.DashboardControllers.createDashboard(request: Request)
+
+PUT /api/dashboard/    controllers.DashboardControllers.createDashboard(request: Request)
+
+GET /api/dashboard/    controllers.DashboardControllers.getDashboard(request: Request)
+
+DELETE /api/dashboard/    controllers.DashboardControllers.deleteDashboard(request: Request)
