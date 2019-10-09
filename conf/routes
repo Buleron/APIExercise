@@ -3,26 +3,39 @@
 # ~~~~
 
 # An example controller showing a sample home page
-
-
-# An example controller showing a sample home page
 + noJwtFilter
 GET /api/authenticate/   controllers.HomeController.authenticate(request: Request)
-
 #+ noJwtFilter
 #GET    /requires-jwt    controllers.DashboardControllers.requiresJwt
 #
 #GET     /requires-jwt-via-filter    controllers.DashboardControllers.requiresJwtViaFilter
-
 # Map static resources from the /public folder to the /assets URL path
-#GET     /assets/*file     controllers.Assets.versioned(path="/public", file: Asset)
++ noJwtFilter
++ nocsrf
+GET     /assets/*file     controllers.Assets.versioned(path="/public", file: Asset)
+### NoDocs ###
++ noJwtFilter
++ nocsrf
+GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
 
+### NoDocs ###
+#+ noJwtFilter
+#+ nocsrf
 #GET     /      controllers.HomeController.index
 + nocsrf
 POST /api/dashboard/    controllers.DashboardControllers.createDashboard(request: Request)
 + nocsrf
-PUT /api/dashboard/    controllers.DashboardControllers.createDashboard(request: Request)
+PUT /api/dashboard/    controllers.DashboardControllers.updateDashboard(request: Request)
 + nocsrf
 GET /api/dashboard/    controllers.DashboardControllers.getDashboard(request: Request)
 + nocsrf
 DELETE /api/dashboard/    controllers.DashboardControllers.deleteDashboard(request: Request)
+
++ nocsrf
+POST /api/content/    controllers.ContentController.createContent(request: Request)
++ nocsrf
+PUT /api/content/    controllers.ContentController.updateContent(request: Request)
++ nocsrf
+GET /api/content/    controllers.ContentController.getContent(request: Request)
++ nocsrf
+DELETE /api/content/    controllers.ContentController.deleteContent(request: Request)

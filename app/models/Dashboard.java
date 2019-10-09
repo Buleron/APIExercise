@@ -2,6 +2,7 @@ package models;
 
 import com.mongodb.WriteResult;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.mongodb.morphia.annotations.Id;
 
 import java.sql.Timestamp;
@@ -9,9 +10,10 @@ import java.sql.Timestamp;
 import static controllers.MongoConfig.datastore;
 
 public @Data
+@EqualsAndHashCode(of ="id")
 class Dashboard {
     @Id
-    private int id;
+    private String id;
     private String name;
     private String description;
     private String parentId;
