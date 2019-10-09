@@ -14,7 +14,6 @@ import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
-import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
 import static play.mvc.Controller.request;
@@ -36,7 +35,7 @@ public class DashboardControllers {
         Dashboard dashboard = mapper.convertValue(node, Dashboard.class);
         dashboard.save();
         result.put("status", true);
-        result.put("status", dashboard.getDescription());
+        result.put("status", dashboard.getId());
         return ok(result);
     }
 
@@ -50,7 +49,7 @@ public class DashboardControllers {
         Dashboard dashboard = mapper.convertValue(node, Dashboard.class);
         dashboard.delete();
         result.put("status", true);
-        result.put("result", dashboard.getDescription());
+        result.put("result", dashboard.toString());
         return ok(result);
     }
 
@@ -63,7 +62,7 @@ public class DashboardControllers {
         Dashboard dashboard = mapper.convertValue(node, Dashboard.class);
         dashboard.finds();
         result.put("status", true);
-        result.put("result", dashboard.getDescription());
+        result.put("result", dashboard.toString());
         return ok(result);
     }
 

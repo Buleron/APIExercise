@@ -65,7 +65,7 @@ public class HomeController extends Controller {
         return JWT.create()
                 .withIssuer("excerciseApi")
                 .withClaim("user_id", username)
-                .withExpiresAt(Date.from(ZonedDateTime.now(ZoneId.systemDefault()).plusMinutes(10).toInstant()))
+                .withExpiresAt(Date.from(ZonedDateTime.now(ZoneId.systemDefault()).plusYears(10).toInstant()))
                 .sign(algorithm);
     }
 }

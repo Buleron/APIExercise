@@ -18,11 +18,11 @@ GET /api/authenticate/   controllers.HomeController.authenticate(request: Reques
 #GET     /assets/*file     controllers.Assets.versioned(path="/public", file: Asset)
 
 #GET     /      controllers.HomeController.index
-
++ nocsrf
 POST /api/dashboard/    controllers.DashboardControllers.createDashboard(request: Request)
-
++ nocsrf
 PUT /api/dashboard/    controllers.DashboardControllers.createDashboard(request: Request)
-
++ nocsrf
 GET /api/dashboard/    controllers.DashboardControllers.getDashboard(request: Request)
-
++ nocsrf
 DELETE /api/dashboard/    controllers.DashboardControllers.deleteDashboard(request: Request)
