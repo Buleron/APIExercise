@@ -26,6 +26,9 @@ public @Data class Content {
     public Content findById(String id){
         return datastore().find(Content.class,"id",id).get();
     }
+    public List<Content>  findAll(){
+        return datastore().find(Content.class).asList();
+    }
 
     public WriteResult deleteById(String id){
         WriteResult writeResult = datastore().delete(Content.class,id);

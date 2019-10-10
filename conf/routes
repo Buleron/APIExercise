@@ -31,6 +31,8 @@ POST /api/content/    controllers.ContentController.createContent(request: Reque
 + nocsrf
 PUT /api/content/    controllers.ContentController.updateContent(request: Request)
 + nocsrf
-GET /api/content/    controllers.ContentController.getContent(request: Request)
+GET /api/content/    controllers.ContentController.getContentById(request: Request)
 + nocsrf
 DELETE /api/content/    controllers.ContentController.deleteContent(request: Request)
++ nocsrf
+GET /api/content/all    controllers.ContentController.getAllContent(request: Request)
