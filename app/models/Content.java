@@ -23,7 +23,7 @@ public @Data class Content {
         datastore().save(this);
     }
 
-    public Content findbyId(String id){
+    public Content findById(String id){
         return datastore().find(Content.class,"id",id).get();
     }
 

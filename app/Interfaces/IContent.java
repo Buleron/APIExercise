@@ -3,7 +3,6 @@ package Interfaces;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import models.*;
-import models.enums.ContentType;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME,
         property="type",

@@ -53,7 +53,7 @@ public class ContentController {
         if(node == null)
             return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
         Content content = new ObjectMapper().convertValue(node, Content.class);
-        Content res = content.findbyId(content.getId());
+        Content res = content.findById(content.getId());
         return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),res)));
     }
 }
