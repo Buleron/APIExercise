@@ -1,7 +1,7 @@
 package models;
 
+import Interfaces.IContent;
 import lombok.Data;
-import lombok.ToString;
 import org.bson.Document;
 
 import java.util.ArrayList;

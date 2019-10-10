@@ -18,7 +18,6 @@ public class MongoConfig {
 
     public static void initDataStore() {
         final Morphia morphia = new Morphia();
-        //tell morphia where to find the models
         morphia.mapPackage("models");
         MongoClient mongoClient  = new MongoClient(
                 ConfigFactory.load().getString("mongodb.host"),

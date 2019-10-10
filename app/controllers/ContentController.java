@@ -1,18 +1,14 @@
 package controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import models.Content;
+import models.Response;
+import models.enums.ResponseMessage;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
-
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static play.mvc.Results.ok;
@@ -21,62 +17,43 @@ import static play.mvc.Results.ok;
 public class ContentController {
 
      private DashboardControllers dashboardControllers = new DashboardControllers();
+     private static final String result = "result";
 
-    public Result createContent(Http.Request request) throws JsonProcessingException {
+    public Result createContent(Http.Request request) {
         JsonNode node = dashboardControllers.checkRequest(request);
-        ObjectNode result = Json.newObject();
         if(node == null)
-            return ok(result.put("status",false));
-        ObjectMapper mapper = new ObjectMapper();
-
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        Content content =  mapper.convertValue(node, Content.class);
+            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
+        Content content =  new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
         String uniqueID = UUID.randomUUID().toString();
-
-       // content.setId(uniqueID);
-        //content.save();
-        result.put("status", true);
-        result.put("status", content.toString());
-        return ok(result);
+        content.setId(uniqueID);
+        content.save();
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),content)));
     }
 
     public Result updateContent(Http.Request request) {
         JsonNode node = dashboardControllers.checkRequest(request);
-        ObjectNode result = Json.newObject();
         if(node == null)
-            return ok(result.put("status",false));
-        ObjectMapper mapper = new ObjectMapper();
-        Content content = mapper.convertValue(node, Content.class);
+            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
+        Content content = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
         content.save();
-        result.put("status", true);
-        result.put("status", content.toString());
-        return ok(result);
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),content)));
     }
 
     public Result deleteContent(Http.Request request)  {
         JsonNode node = dashboardControllers.checkRequest(request);
-        ObjectNode result = Json.newObject();
         if(node == null)
-            return ok(result.put("status",false));
-        ObjectMapper mapper = new ObjectMapper();
-        Content content = mapper.convertValue(node, Content.class);
+            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
+        Content content = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
         content.delete();
-        result.put("status", true);
-        result.put("result", content.toString());
-        return ok(result);
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),content)));
     }
 
     public Result getContent(Http.Request request)  {
         JsonNode node =  dashboardControllers.checkRequest(request);
-        ObjectNode result = Json.newObject();
         if(node == null)
-            return ok(result.put("status",false));
-        ObjectMapper mapper = new ObjectMapper();
-        Content content = mapper.convertValue(node, Content.class);
-        content.finds();
-        result.put("status", true);
-
-        result.put("result", content.toString());
-        return ok(result);
+            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
+        Content content = new ObjectMapper().convertValue(node, Content.class);
+        Content res = content.findbyId(content.getId());
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),res)));
     }
 }

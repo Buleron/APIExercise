@@ -1,5 +1,6 @@
 package models;
 
+import Interfaces.IContent;
 import lombok.Data;
 import lombok.ToString;
 

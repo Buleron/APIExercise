@@ -7,12 +7,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.typesafe.config.Config;
 import jwt.JwtControllerHelper;
+import models.Response;
 import models.User;
+import models.enums.ResponseMessage;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
+
 import javax.inject.Inject;
 import java.io.UnsupportedEncodingException;
 import java.time.ZoneId;
@@ -28,35 +31,22 @@ public class HomeController extends Controller {
     private JwtControllerHelper jwtControllerHelper;
     @Inject
     private Config config;
+    private DashboardControllers dashboardControllers = new DashboardControllers();
+    private static final String result = "result";
 
     public Result authenticate(Http.Request request) throws UnsupportedEncodingException {
-        if (request.body().toString().isEmpty()) {
-            Logger.of("json body is null");
-            return forbidden();
-        }
-
-        JsonNode node = request.body().asJson();
-        ObjectMapper mapper = new ObjectMapper();
-        User user = mapper.convertValue(node, User.class);
-        ObjectNode result = Json.newObject();
-
+        JsonNode node = dashboardControllers.checkRequest(request);
+        if (node == null)
+            return ok(Json.newObject().putPOJO(result, new Response(false, -1, ResponseMessage.PARAMETERS_ERROR.toString())));
+        User user = new ObjectMapper().convertValue(node, User.class);
         if (user.getUsername().isEmpty() && user.getPassword().isEmpty()) {
-            result.put("status", false);
-            result.put("result", "Missing parameters");
-            return ok(result);
+            return ok(Json.newObject().putPOJO(result, new Response(false, -1, ResponseMessage.MISSING_PARAMETERS.toString())));
         }
         //check if user exists with username and password;
         boolean out = user.auth(user.getUsername(), user.getPassword());
-        if (out) {
-            result.put("status", true);
-            result.put("token", getSignedToken(user.getUsername()));
-            return ok(result);
-
-        } else {
-            result.put("status", false);
-            result.put("result", "Wrong username or password");
-            return ok(result);
-        }
+        if (out)
+            return ok(Json.newObject().putPOJO("token", getSignedToken(user.getUsername())));
+        return ok(Json.newObject().putPOJO(result, new Response(false, -1, ResponseMessage.WRONG_CREDENTIAL.toString())));
     }
 
     private String getSignedToken(String username) throws UnsupportedEncodingException {

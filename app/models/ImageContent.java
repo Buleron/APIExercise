@@ -1,7 +1,6 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import Interfaces.IContent;
 
 public class ImageContent implements IContent {
     private String url;

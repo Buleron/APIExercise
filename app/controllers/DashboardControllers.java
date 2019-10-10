@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.typesafe.config.Config;
 import jwt.JwtControllerHelper;
 import models.Dashboard;
+import models.Response;
+import models.enums.ResponseMessage;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Http;
@@ -16,18 +18,13 @@ import java.util.UUID;
 import static play.mvc.Results.ok;
 
 public class DashboardControllers {
-    @Inject
-    private JwtControllerHelper jwtControllerHelper;
-    @Inject
-    private Config config;
-    //createDashboard and updateDashboard use the same query;
+    private static final String result = "result";
+
     public Result createDashboard(Http.Request request) {
         JsonNode node = checkRequest(request);
-        ObjectNode result = Json.newObject();
         if(node == null)
-            return ok(result.put("status",false));
-        ObjectMapper mapper = new ObjectMapper();
-        Dashboard dashboard = mapper.convertValue(node, Dashboard.class);
+            return ok(Json.newObject().putPOJO(result,new Response(false,-1, ResponseMessage.PARAMETERS_ERROR.toString())));
+        Dashboard dashboard = new ObjectMapper().convertValue(node, Dashboard.class);
         String uniqueID = UUID.randomUUID().toString();
         dashboard.setId(uniqueID);
         Instant instant = Instant.now();
@@ -35,49 +32,35 @@ public class DashboardControllers {
         java.sql.Timestamp timestamp = new java.sql.Timestamp(timeStampMillis);
         dashboard.setCreatedAt(timestamp);
         dashboard.save();
-        result.put("status", true);
-        result.put("status", dashboard.getId());
-        return ok(result);
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),dashboard)));
     }
 
     public Result updateDashboard(Http.Request request) {
         JsonNode node = checkRequest(request);
-        ObjectNode result = Json.newObject();
         if(node == null)
-            return ok(result.put("status",false));
-        ObjectMapper mapper = new ObjectMapper();
-        Dashboard dashboard = mapper.convertValue(node, Dashboard.class);
+            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
+        Dashboard dashboard = new ObjectMapper().convertValue(node, Dashboard.class);
         dashboard.save();
-        result.put("status", true);
-        result.put("status", dashboard.getId());
-        return ok(result);
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),dashboard)));
     }
 
 
     public Result deleteDashboard(Http.Request request)  {
         JsonNode node = checkRequest(request);
-        ObjectNode result = Json.newObject();
         if(node == null)
-            return ok(result.put("status",false));
-        ObjectMapper mapper = new ObjectMapper();
-        Dashboard dashboard = mapper.convertValue(node, Dashboard.class);
+            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
+        Dashboard dashboard = new ObjectMapper().convertValue(node, Dashboard.class);
         dashboard.delete();
-        result.put("status", true);
-        result.put("result", dashboard.toString());
-        return ok(result);
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),dashboard)));
     }
 
     public Result getDashboard(Http.Request request)  {
         JsonNode node = checkRequest(request);
-        ObjectNode result = Json.newObject();
         if(node == null)
-            return ok(result.put("status",false));
-        ObjectMapper mapper = new ObjectMapper();
-        Dashboard dashboard = mapper.convertValue(node, Dashboard.class);
+            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
+        Dashboard dashboard = new ObjectMapper().convertValue(node, Dashboard.class);
         dashboard.finds();
-        result.put("status", true);
-        result.put("result", dashboard.toString());
-        return ok(result);
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),dashboard)));
     }
 
     public JsonNode checkRequest(Http.Request request){

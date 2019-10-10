@@ -5,11 +5,7 @@
 # An example controller showing a sample home page
 + noJwtFilter
 GET /api/authenticate/   controllers.HomeController.authenticate(request: Request)
-#+ noJwtFilter
-#GET    /requires-jwt    controllers.DashboardControllers.requiresJwt
-#
-#GET     /requires-jwt-via-filter    controllers.DashboardControllers.requiresJwtViaFilter
-# Map static resources from the /public folder to the /assets URL path
+
 + noJwtFilter
 + nocsrf
 GET     /assets/*file     controllers.Assets.versioned(path="/public", file: Asset)
@@ -30,7 +26,6 @@ PUT /api/dashboard/    controllers.DashboardControllers.updateDashboard(request:
 GET /api/dashboard/    controllers.DashboardControllers.getDashboard(request: Request)
 + nocsrf
 DELETE /api/dashboard/    controllers.DashboardControllers.deleteDashboard(request: Request)
-
 + nocsrf
 POST /api/content/    controllers.ContentController.createContent(request: Request)
 + nocsrf
