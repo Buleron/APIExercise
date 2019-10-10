@@ -27,10 +27,9 @@ public @Data class Content {
         return datastore().find(Content.class,"id",id).get();
     }
 
-    public WriteResult delete(){
-        WriteResult writeResult = datastore().delete(Content.class);
-        writeResult.isUpdateOfExisting();
-        return datastore().delete(Content.class);
+    public WriteResult deleteById(String id){
+        WriteResult writeResult = datastore().delete(Content.class,id);
+        return  writeResult;
     }
 
     public Content query() {

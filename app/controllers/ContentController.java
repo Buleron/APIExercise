@@ -3,6 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.WriteResult;
 import models.Content;
 import models.Response;
 import models.enums.ResponseMessage;
@@ -43,9 +44,11 @@ public class ContentController {
         JsonNode node = dashboardControllers.checkRequest(request);
         if(node == null)
             return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
-        Content content = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
-        content.delete();
-        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),content)));
+        Content content = new ObjectMapper().convertValue(node, Content.class);
+        WriteResult res = content.deleteById(content.getId());
+        if (res.getN() == 1)
+            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.SUCCESSFULLY.toString())));
+        return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
     }
 
     public Result getContent(Http.Request request)  {
