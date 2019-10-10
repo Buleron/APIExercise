@@ -62,7 +62,7 @@ public class ContentController {
         return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),res)));
     }
 
-    public Result getAllContent(Http.Request request)  {
+    public Result getAllContent()  {
         Content content = new Content();
         List<Content> res = content.findAll();
         return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),res)));

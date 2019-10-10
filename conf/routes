@@ -35,4 +35,4 @@ GET /api/content/    controllers.ContentController.getContentById(request: Reque
 + nocsrf
 DELETE /api/content/    controllers.ContentController.deleteContent(request: Request)
 + nocsrf
-GET /api/content/all    controllers.ContentController.getAllContent(request: Request)
+GET /api/content/all    controllers.ContentController.getAllContent()
