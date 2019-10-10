@@ -15,5 +15,4 @@ import models.enums.ContentType;
         @JsonSubTypes.Type(value= LineContent.class, name = "LINE")
 })
 public interface IContent {
-    ContentType type =ContentType.EMAIL;
 }

@@ -9,5 +9,5 @@ import java.util.List;
 
 @Data
 public class LineContent implements IContent {
-    List<Document> data = new ArrayList<>();
+    List<DataContent> data = new ArrayList<>();
 }
