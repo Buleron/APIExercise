@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mongodb.WriteResult;
 import lombok.Data;
+import org.mongodb.morphia.Key;
 import org.mongodb.morphia.annotations.Id;
 
 import java.util.ArrayList;
@@ -19,8 +20,8 @@ public @Data class Content {
     private String dashboardId;
     public List<IContent> content = new ArrayList<>();
 
-    public void save() {
-        datastore().save(this);
+    public Key<Content> save() {
+        return datastore().save(this);
     }
 
     public Content findById(String id){
@@ -31,8 +32,7 @@ public @Data class Content {
     }
 
     public WriteResult deleteById(String id){
-        WriteResult writeResult = datastore().delete(Content.class,id);
-        return  writeResult;
+        return datastore().delete(Content.class,id);
     }
 
     public Content query() {

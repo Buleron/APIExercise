@@ -2,18 +2,17 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.typesafe.config.Config;
-import jwt.JwtControllerHelper;
+import com.mongodb.WriteResult;
 import models.Dashboard;
 import models.Response;
 import models.enums.ResponseMessage;
+import org.mongodb.morphia.Key;
 import play.Logger;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
-import javax.inject.Inject;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import static play.mvc.Results.ok;
 
@@ -25,13 +24,11 @@ public class DashboardControllers {
         if(node == null)
             return ok(Json.newObject().putPOJO(result,new Response(false,-1, ResponseMessage.PARAMETERS_ERROR.toString())));
         Dashboard dashboard = new ObjectMapper().convertValue(node, Dashboard.class);
-        String uniqueID = UUID.randomUUID().toString();
-        dashboard.setId(uniqueID);
-        Instant instant = Instant.now();
-        long timeStampMillis = instant.toEpochMilli();
-        java.sql.Timestamp timestamp = new java.sql.Timestamp(timeStampMillis);
-        dashboard.setCreatedAt(timestamp);
-        dashboard.save();
+        dashboard.setId(UUID.randomUUID().toString());
+        dashboard.setCreatedAt(new java.sql.Timestamp(Instant.now().toEpochMilli()));
+        Key<Dashboard> res = dashboard.save();
+        if(res.getId().toString().isEmpty())
+            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
         return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),dashboard)));
     }
 
@@ -40,28 +37,37 @@ public class DashboardControllers {
         if(node == null)
             return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
         Dashboard dashboard = new ObjectMapper().convertValue(node, Dashboard.class);
-        dashboard.save();
+        Key<Dashboard> res = dashboard.save();
+        if(res.getId().toString().isEmpty())
+            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
         return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),dashboard)));
     }
 
 
-    public Result deleteDashboard(Http.Request request)  {
+    public Result deleteDashboard(Http.Request request) {
+        JsonNode node = checkRequest(request);
+        if (node == null)
+            return ok(Json.newObject().putPOJO(result, new Response(false, -1, ResponseMessage.PARAMETERS_ERROR.toString())));
+        Dashboard dashboard = new ObjectMapper().convertValue(node, Dashboard.class);
+        WriteResult res = dashboard.deleteById(dashboard.getId());
+        if (res.getN() == 1)
+            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.SUCCESSFULLY.toString(), dashboard)));
+        return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
+    }
+
+    public Result getAllDashboards()  {
+        List<Dashboard> dashboards =  new Dashboard().findAll();
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),dashboards)));
+    }
+    public Result getDashboardById(Http.Request request) {
         JsonNode node = checkRequest(request);
         if(node == null)
             return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
         Dashboard dashboard = new ObjectMapper().convertValue(node, Dashboard.class);
-        dashboard.delete();
-        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),dashboard)));
+       Dashboard res = dashboard.findById(dashboard.getId());
+        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),res)));
     }
 
-    public Result getDashboard(Http.Request request)  {
-        JsonNode node = checkRequest(request);
-        if(node == null)
-            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
-        Dashboard dashboard = new ObjectMapper().convertValue(node, Dashboard.class);
-        dashboard.finds();
-        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),dashboard)));
-    }
 
     public JsonNode checkRequest(Http.Request request){
         if (request.body().toString().isEmpty()) {

@@ -7,15 +7,14 @@ import com.mongodb.WriteResult;
 import models.Content;
 import models.Response;
 import models.enums.ResponseMessage;
+import org.mongodb.morphia.Key;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
-
 import java.util.List;
 import java.util.UUID;
 
 import static play.mvc.Results.ok;
-
 
 public class ContentController {
 
@@ -27,9 +26,10 @@ public class ContentController {
         if(node == null)
             return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
         Content content =  new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
-        String uniqueID = UUID.randomUUID().toString();
-        content.setId(uniqueID);
-        content.save();
+        content.setId(UUID.randomUUID().toString());
+        Key<Content> res = content.save();
+        if(res.getId().toString().isEmpty())
+            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
         return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),content)));
     }
 
@@ -38,7 +38,9 @@ public class ContentController {
         if(node == null)
             return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
         Content content = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
-        content.save();
+        Key<Content> res = content.save();
+        if(res.getId().toString().isEmpty())
+            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
         return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),content)));
     }
 

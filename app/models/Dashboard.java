@@ -3,9 +3,11 @@ package models;
 import com.mongodb.WriteResult;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.mongodb.morphia.Key;
 import org.mongodb.morphia.annotations.Id;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import static controllers.MongoConfig.datastore;
 
@@ -22,18 +24,19 @@ class Dashboard {
     private String[] writeACL;
 
 
-    public void save() {
-        datastore().save(this);
+    public Key<Dashboard> save() {
+        return datastore().save(this);
+    }
+    public List<Dashboard> findAll(){
+        return datastore().find(Dashboard.class).asList();
     }
 
-    public Dashboard finds(){
-        return datastore().find(Dashboard.class).get();
+    public Dashboard findById(String id) {
+        return datastore().find(Dashboard.class,"id",id).get();
     }
 
-    public WriteResult delete(){
-        WriteResult writeResult = datastore().delete(Dashboard.class);
-        writeResult.isUpdateOfExisting();
-        return datastore().delete(Dashboard.class);
+    public WriteResult deleteById(String id) {
+        return datastore().delete(Dashboard.class,id);
     }
 
     public Dashboard query() {
