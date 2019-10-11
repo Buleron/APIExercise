@@ -39,6 +39,15 @@ class Dashboard {
         return datastore().delete(Dashboard.class,id);
     }
 
+    public boolean checkIfExists(String id) {
+        if(id.isEmpty())
+            return false;
+        if(datastore().find(Dashboard.class,"id",id).get() != null){
+            return true;
+        }
+        return false;
+    }
+
     public Dashboard query() {
         return datastore().createQuery(Dashboard.class).get();
     }

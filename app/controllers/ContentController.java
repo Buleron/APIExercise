@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.WriteResult;
 import models.Content;
+import models.Dashboard;
 import models.Response;
 import models.enums.ResponseMessage;
 import org.mongodb.morphia.Key;
@@ -27,6 +28,9 @@ public class ContentController {
             return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
         Content content =  new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
         content.setId(UUID.randomUUID().toString());
+        //check if dashboard parent id exists before insert
+        if(!new Dashboard().checkIfExists(content.getDashboardId()))
+            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.WRONG_DASHBOARD_ID.toString())));
         Key<Content> res = content.save();
         if(res.getId().toString().isEmpty())
             return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
@@ -38,6 +42,9 @@ public class ContentController {
         if(node == null)
             return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
         Content content = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
+        //check if dashboard parent id exists before insert
+        if(!new Dashboard().checkIfExists(content.getDashboardId()))
+            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.WRONG_DASHBOARD_ID.toString())));
         Key<Content> res = content.save();
         if(res.getId().toString().isEmpty())
             return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
