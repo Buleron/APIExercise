@@ -2,32 +2,36 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 # An example controller showing a sample home page
-+ noJwtFilter
-GET /api/authenticate/   controllers.HomeController.authenticate(request: Request)
+#+ noJwtFilter
+#GET /api/authenticate/   controllers.HomeController.authenticate(request: Request)
 
-+ noJwtFilter
-+ nocsrf
-GET     /assets/*file     controllers.Assets.versioned(path="/public", file: Asset)
-+ noJwtFilter
-+ nocsrf
-GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
-+ nocsrf
-POST /api/dashboard/    controllers.DashboardControllers.createDashboard(request: Request)
-+ nocsrf
-PUT /api/dashboard/    controllers.DashboardControllers.updateDashboard(request: Request)
-+ nocsrf
-GET /api/dashboard/all    controllers.DashboardControllers.getAllDashboards()
-+ nocsrf
-GET /api/dashboard/    controllers.DashboardControllers.getDashboardById(request: Request)
-+ nocsrf
-DELETE /api/dashboard/    controllers.DashboardControllers.deleteDashboard(request: Request)
-+ nocsrf
-POST /api/content/    controllers.ContentController.createContent(request: Request)
-+ nocsrf
-PUT /api/content/    controllers.ContentController.updateContent(request: Request)
-+ nocsrf
-GET /api/content/    controllers.ContentController.getContentById(request: Request)
-+ nocsrf
-DELETE /api/content/    controllers.ContentController.deleteContent(request: Request)
-+ nocsrf
-GET /api/content/all    controllers.ContentController.getAllContent()
+GET    /api/dashboard/         controllers.DashboardControllers.all(request: Request)
+POST   /api/dashboard/         controllers.DashboardControllers.save(request: Request)
+PUT    /api/dashboard/         controllers.DashboardControllers.update(request: Request)
+DELETE /api/dashboard/         controllers.DashboardControllers.delete(request: Request)
+#+ noJwtFilter
+#+ nocsrf
+#GET     /assets/*file     controllers.Assets.versioned(path="/public", file: Asset)
+##+ noJwtFilter
+##+ nocsrf
+#GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
+#+ nocsrf
+#POST /api/dashboard/    controllers.DashboardControllers.createDashboard(request: Request)
+#+ nocsrf
+#PUT /api/dashboard/    controllers.DashboardControllers.updateDashboard(request: Request)
+#+ nocsrf
+#GET /api/dashboard/all    controllers.DashboardControllers.getAllDashboards()
+#+ nocsrf
+#GET /api/dashboard/    controllers.DashboardControllers.getDashboardById(request: Request)
+#+ nocsrf
+#DELETE /api/dashboard/    controllers.DashboardControllers.deleteDashboard(request: Request)
+#+ nocsrf
+#POST /api/content/    controllers.ContentController.createContent(request: Request)
+#+ nocsrf
+#PUT /api/content/    controllers.ContentController.updateContent(request: Request)
+#+ nocsrf
+#GET /api/content/    controllers.ContentController.getContentById(request: Request)
+#+ nocsrf
+#DELETE /api/content/    controllers.ContentController.deleteContent(request: Request)
+#+ nocsrf
+#GET /api/content/all    controllers.ContentController.getAllContent()
