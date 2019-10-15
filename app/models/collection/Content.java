@@ -16,23 +16,4 @@ public @Data class Content {
     @Reference(from = "dashboardId", to = "id")
     private String dashboardId;
     public List<IContent> content = new ArrayList<>();
-
-//    public Key<Content> save() {
-//        return datastore().save(this);
-//    }
-//
-//    public Content findById(String id){
-//        return datastore().find(Content.class,"id",id).get();
-//    }
-//    public List<Content>  findAll(){
-//        return datastore().find(Content.class).asList();
-//    }
-//
-//    public WriteResult deleteById(String id){
-//        return datastore().delete(Content.class,id);
-//    }
-//
-//    public Content query() {
-//        return datastore().createQuery(Content.class).get();
-//    }
 }

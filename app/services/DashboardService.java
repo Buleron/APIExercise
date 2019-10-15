@@ -1,18 +1,17 @@
 package services;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import models.collection.Dashboard;
-import models.exceptions.RequestException;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import play.mvc.Http;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
 public class DashboardService {
@@ -23,13 +22,19 @@ public class DashboardService {
     }
 
     public CompletableFuture<List<Dashboard>> all(Executor context) {
-        return CompletableFuture.supplyAsync(() -> {
+         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
             List<Dashboard> items = dashboards.find().into(new ArrayList<>());
-            if (items.size() > 0) {
-                throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "Wrong, this is bad."));
-            }
             return items;
+        }, context);
+    }
+
+    public CompletableFuture<Dashboard> findById(String t,Executor context) {
+        return CompletableFuture.supplyAsync(() -> {
+            MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
+            BasicDBObject query = new BasicDBObject();
+            query.put("_id", new ObjectId(t));
+            return dashboards.find(query).first();
         }, context);
     }
 
@@ -45,8 +50,11 @@ public class DashboardService {
     public CompletableFuture<Dashboard> update(Dashboard which) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
-            which.setId(new ObjectId());
-            dashboards.updateOne(Filters.eq("id",which.getId()),(Bson) dashboards);
+            BasicDBObject query = new BasicDBObject();
+            query.put("_id", new ObjectId(which.getId().toString()));
+            dashboards.updateOne(Filters.eq("_id", which.getId()),
+                    new BasicDBObject("$set",which)
+            );
             return which;
         });
     }
@@ -54,8 +62,7 @@ public class DashboardService {
     public CompletableFuture<Dashboard> delete(Dashboard which) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
-            which.setId(new ObjectId());
-            dashboards.deleteOne(Filters.eq("id",which.getId()));
+            dashboards.deleteOne(new BasicDBObject("_id",  which.getId()));
             return which;
         });
     }

@@ -6,9 +6,10 @@
 #GET /api/authenticate/   controllers.HomeController.authenticate(request: Request)
 
 GET    /api/dashboard/         controllers.DashboardControllers.all(request: Request)
+GET    /api/dashboard/:id      controllers.DashboardControllers.findById(id: String)
 POST   /api/dashboard/         controllers.DashboardControllers.save(request: Request)
 PUT    /api/dashboard/         controllers.DashboardControllers.update(request: Request)
-DELETE /api/dashboard/         controllers.DashboardControllers.delete(request: Request)
+DELETE /api/dashboard/      controllers.DashboardControllers.delete(request: Request)
 #+ noJwtFilter
 #+ nocsrf
 #GET     /assets/*file     controllers.Assets.versioned(path="/public", file: Asset)

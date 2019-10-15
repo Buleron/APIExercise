@@ -7,6 +7,7 @@ import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.mvc.Results;
 import services.DashboardService;
 import utils.DatabaseUtils;
 import utils.ServiceUtils;
@@ -29,12 +30,17 @@ public class DashboardControllers {
 
     public CompletableFuture<Result> all (Http.Request request) {
         return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).all(context.current()))
-            .thenCompose((items) -> ServiceUtils.toJsonNode(items))
-            .thenApply((json) -> ok(json))
-            .exceptionally((exception) -> {
-//                return badRequest(200, "wrong");
-                return DatabaseUtils.resultFromThrowable(exception, messagesApi);
-            });
+            .thenCompose(ServiceUtils::toJsonNode)
+            .thenApply(Results::ok)
+            .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
+    }
+    @BodyParser.Of(BodyParser.Json.class)
+    public CompletableFuture<Result> findById(String id){
+        return ServiceUtils.parseBodyOfType(context.current(),Dashboard.class)
+                .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).findById(id,context.current()))
+                .thenCompose(ServiceUtils::toJsonNode)
+                .thenApply(Results::ok)
+                .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception,messagesApi));
     }
 
     @BodyParser.Of(BodyParser.Json.class)
@@ -42,7 +48,7 @@ public class DashboardControllers {
         return ServiceUtils.parseBodyOfType(context.current(), Dashboard.class)
                 .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).save(item, context.current()))
                 .thenCompose(ServiceUtils::toJsonNode)
-                .thenApply((json) -> ok(json))
+                .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
@@ -50,22 +56,18 @@ public class DashboardControllers {
     public CompletableFuture<Result> update (Http.Request request) {
         return ServiceUtils.parseBodyOfType(context.current(), Dashboard.class)
                 .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).update(item))
-                .thenCompose((items) -> ServiceUtils.toJsonNode(items))
-                .thenApply((json) -> ok(json))
-                .exceptionally((exception) -> {
-                    return DatabaseUtils.resultFromThrowable(exception, messagesApi);
-                });
+                .thenCompose(ServiceUtils::toJsonNode)
+                .thenApply(Results::ok)
+                .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
     @BodyParser.Of(BodyParser.Json.class)
     public CompletableFuture<Result> delete (Http.Request request) {
         return ServiceUtils.parseBodyOfType(context.current(), Dashboard.class)
                 .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).delete(item))
-                .thenCompose((items) -> ServiceUtils.toJsonNode(items))
-                .thenApply((json) -> ok(json))
-                .exceptionally((exception) -> {
-                    return DatabaseUtils.resultFromThrowable(exception, messagesApi);
-                });
+                .thenCompose(ServiceUtils::toJsonNode)
+                .thenApply(Results::ok)
+                .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 //
 //    public Result createDashboard(Http.Request request) {
