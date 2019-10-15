@@ -1,70 +1,68 @@
 package controllers;
 
+import models.collection.Content;
+import play.mvc.BodyParser;
+import play.mvc.Result;
+import mongo.MongoDB;
+import play.i18n.MessagesApi;
 import play.libs.concurrent.HttpExecutionContext;
+import play.mvc.Http;
+import play.mvc.Results;
+import services.ContentService;
+import utils.DatabaseUtils;
+import utils.ServiceUtils;
 
 import javax.inject.Inject;
+import java.util.concurrent.CompletableFuture;
 
 public class ContentController {
 
-     private DashboardControllers dashboardControllers = new DashboardControllers();
-     private static final String result = "result";
+     @Inject
+     MongoDB mongoDB;
+     @Inject
+     MessagesApi messagesApi;
      @Inject
      HttpExecutionContext context;
 
-//    public CompletableFuture<Result> createContent(Http.Request request) {
-//        return CompletableFuture.supplyAsync(() -> {
-//            JsonNode node = dashboardControllers.checkRequest(request);
-//            if(node == null)
-//                return ok(Json.newObject().putPOJO(result,new Response(false, Http.Status.NOT_FOUND, ResponseMessage.PARAMETERS_ERROR.toString())));
-//            Content content =  new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
-//            content.setId(UUID.randomUUID().toString());
-//            //check if dashboard parent id exists before insert
-//            if(!new Dashboard().checkIfExists(content.getDashboardId()))
-//                return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.WRONG_DASHBOARD_ID.toString())));
-//            Key<Content> res = content.save();
-//            if(res.getId().toString().isEmpty())
-//                return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
-//            return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),content)));
-//        }, context.current());
-//    }
-//
-//    public Result updateContent(Http.Request request) {
-//        JsonNode node = dashboardControllers.checkRequest(request);
-//        if(node == null)
-//            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
-//        Content content = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).convertValue(node, Content.class);
-//        //check if dashboard parent id exists before insert
-//        if(!new Dashboard().checkIfExists(content.getDashboardId()))
-//            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.WRONG_DASHBOARD_ID.toString())));
-//        Key<Content> res = content.save();
-//        if(res.getId().toString().isEmpty())
-//            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
-//        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),content)));
-//    }
-//
-//    public Result deleteContent(Http.Request request)  {
-//        JsonNode node = dashboardControllers.checkRequest(request);
-//        if(node == null)
-//            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
-//        Content content = new ObjectMapper().convertValue(node, Content.class);
-//        WriteResult res = content.deleteById(content.getId());
-//        if (res.getN() == 1)
-//            return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.SUCCESSFULLY.toString())));
-//        return ok(Json.newObject().putPOJO(result, new Response(true, 0, ResponseMessage.NO_DATA_FOUND.toString())));
-//    }
-//
-//    public Result getContentById(Http.Request request)  {
-//        JsonNode node =  dashboardControllers.checkRequest(request);
-//        if(node == null)
-//            return ok(Json.newObject().putPOJO(result,new Response(false,-1,ResponseMessage.PARAMETERS_ERROR.toString())));
-//        Content content = new ObjectMapper().convertValue(node, Content.class);
-//        Content res = content.findById(content.getId());
-//        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),res)));
-//    }
-//
-//    public Result getAllContent()  {
-//        Content content = new Content();
-//        List<Content> res = content.findAll();
-//        return ok(Json.newObject().putPOJO(result, new Response(true,0,ResponseMessage.SUCCESSFULLY.toString(),res)));
-//    }
+     public CompletableFuture<Result> all(Http.Request request) {
+          return CompletableFuture.supplyAsync(() -> new ContentService(mongoDB.getDatabase()).all(context.current()))
+                  .thenCompose(ServiceUtils::toJsonNode)
+                  .thenApply(Results::ok)
+                  .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception,messagesApi));
+     }
+
+     public CompletableFuture<Result> findById(String id){
+          return ServiceUtils.parseBodyOfType(context.current(), Content.class)
+                  .thenCompose((item) -> new ContentService(mongoDB.getDatabase()).findById(id,context.current()))
+                  .thenCompose(ServiceUtils::toJsonNode)
+                  .thenApply(Results::ok)
+                  .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception,messagesApi));
+     }
+
+     @BodyParser.Of(BodyParser.Json.class)
+     public CompletableFuture<Result> save(Http.Request request) {
+          return ServiceUtils.parseBodyOfType(context.current(), Content.class)
+                  .thenCompose((item) -> new ContentService(mongoDB.getDatabase()).save(item, context.current()))
+                  .thenCompose(ServiceUtils::toJsonNode)
+                  .thenApply(Results::ok)
+                  .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
+     }
+
+     @BodyParser.Of(BodyParser.Json.class)
+     public CompletableFuture<Result> update(Http.Request request) {
+          return ServiceUtils.parseBodyOfType(context.current(), Content.class)
+                  .thenCompose((item) -> new ContentService(mongoDB.getDatabase()).update(item, context.current()))
+                  .thenCompose(ServiceUtils::toJsonNode)
+                  .thenApply(Results::ok)
+                  .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
+     }
+
+     @BodyParser.Of(BodyParser.Json.class)
+     public CompletableFuture<Result> delete(Http.Request request) {
+          return ServiceUtils.parseBodyOfType(context.current(), Content.class)
+                  .thenCompose((item) -> new ContentService(mongoDB.getDatabase()).delete(item, context.current()))
+                  .thenCompose(ServiceUtils::toJsonNode)
+                  .thenApply(Results::ok)
+                  .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
+     }
 }
