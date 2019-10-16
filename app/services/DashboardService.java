@@ -7,10 +7,15 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import models.collection.Dashboard;
+import models.exceptions.RequestException;
+import org.bson.Document;
 import org.bson.types.ObjectId;
+import play.mvc.Http;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
 public class DashboardService {
@@ -23,7 +28,10 @@ public class DashboardService {
     public CompletableFuture<List<Dashboard>> all(Executor context) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
-            return dashboards.find().into(new ArrayList<>());
+            ArrayList<Dashboard> dash = dashboards.find().into(new ArrayList<>());
+            if (dash.isEmpty())
+                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
+            return dash;
         }, context);
     }
 
@@ -32,7 +40,10 @@ public class DashboardService {
             MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(t));
-            return dashboards.find(query).first();
+            Dashboard dash = dashboards.find(query).first();
+            if (dash == null)
+                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
+            return dash;
         }, context);
     }
 
@@ -45,21 +56,23 @@ public class DashboardService {
         }, context);
     }
 
-    public CompletableFuture<Dashboard> update(Dashboard which,Executor context) {
+    public CompletableFuture<Dashboard> update(Dashboard which, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
             UpdateResult updateResult = dashboards.updateOne(Filters.eq("_id", which.getId()), new BasicDBObject("$set", which));
-            System.out.println(updateResult);
-            return which;
+            if (updateResult.isModifiedCountAvailable())
+                return which;
+            throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, updateResult));
         }, context);
     }
 
-    public CompletableFuture<Dashboard> delete(Dashboard which,Executor context) {
+    public CompletableFuture<DeleteResult> delete(Dashboard which, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
             DeleteResult deleteResult = dashboards.deleteOne(new BasicDBObject("_id", which.getId()));
-            System.out.println(deleteResult);
-            return which;
-        },context);
+            if (deleteResult.wasAcknowledged())
+                return deleteResult;
+            throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, deleteResult));
+        }, context);
     }
 }

@@ -57,7 +57,6 @@ public class ContentController {
                   .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
      }
 
-     @BodyParser.Of(BodyParser.Json.class)
      public CompletableFuture<Result> delete(String id) {
           return ServiceUtils.parseBodyOfType(context.current(), Content.class)
                   .thenCompose((item) -> new ContentService(mongoDB.getDatabase()).delete(id, context.current()))

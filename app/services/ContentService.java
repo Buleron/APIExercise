@@ -2,69 +2,84 @@ package services;
 
 import Interfaces.IContent;
 import com.mongodb.BasicDBObject;
+import com.mongodb.MongoException;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import models.Response;
 import models.collection.Content;
+import models.exceptions.RequestException;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import play.Logger;
+import play.mvc.Http;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 
 public class ContentService {
     private MongoDatabase database;
 
-    public ContentService(MongoDatabase mongoDatabase){
+    public ContentService(MongoDatabase mongoDatabase) {
         this.database = mongoDatabase;
     }
 
     public CompletableFuture<List<Document>> all(Executor executor) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Document> content = database.getCollection("Content");
-            return content.find().into(new ArrayList<>());
-
-        },executor);
+           ArrayList<Document> doc  = content.find().into(new ArrayList<>());
+           if(doc.isEmpty())
+               throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
+           return doc;
+        }, executor);
     }
 
-    public CompletableFuture<Document> findById(String x,Executor context) {
+    public CompletableFuture<Document> findById(String x, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Document> content = database.getCollection("Content");
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(x));
-            return content.find(query).first();
-        },context);
+            Document doc = content.find(query).first();
+            if(doc.isEmpty())
+                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
+            return doc;
+        }, context);
     }
 
-    public CompletableFuture<Content>  save(Content resContent, Executor context) {
+    public CompletableFuture<Content> save(Content resContent, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection("Content",Content.class);
-            resContent.setId(new ObjectId());
-            content.insertOne(resContent);
+            MongoCollection<Content> content = database.getCollection("Content", Content.class);
+                resContent.setId(new ObjectId());
+                content.insertOne(resContent);
             return resContent;
-        },context);
-    }
-    public CompletableFuture<Content> update(Content resContent,Executor context) {
-        return CompletableFuture.supplyAsync(()-> {
-            MongoCollection<Content> content = database.getCollection("Content",Content.class);
-            UpdateResult updateResult = content.updateOne(Filters.eq("_id",resContent.getId()),new BasicDBObject("$set",resContent));
-            System.out.println(updateResult);
-            return resContent;
-        },context);
+        }, context);
     }
 
-    public CompletableFuture<DeleteResult> delete(String contentID,Executor context) {
-        return CompletableFuture.supplyAsync(()-> {
-            MongoCollection<Content> content = database.getCollection("Content",Content.class);
+    public CompletableFuture<Content> update(Content resContent, Executor context) {
+        return CompletableFuture.supplyAsync(() -> {
+            MongoCollection<Content> content = database.getCollection("Content", Content.class);
+            UpdateResult updateResult = content.updateOne(Filters.eq("_id", resContent.getId()), new BasicDBObject("$set", resContent));
+            if (updateResult.isModifiedCountAvailable())
+                return resContent;
+            throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, updateResult));
+        }, context);
+    }
+
+    public CompletableFuture<DeleteResult> delete(String contentID, Executor context) {
+        return CompletableFuture.supplyAsync(() -> {
+            MongoCollection<Content> content = database.getCollection("Content", Content.class);
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(contentID));
             DeleteResult deleteResult = content.deleteOne(query);
-            System.out.println(deleteResult);
-            return  deleteResult;
-        },context);
+            if (deleteResult.wasAcknowledged())
+                return deleteResult;
+            throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, deleteResult));
+        }, context);
     }
 }
