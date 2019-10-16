@@ -49,7 +49,7 @@ public class HomeService {
     }
 
         private String getSignedToken(String username) throws UnsupportedEncodingException {
-        String secret = "config.getString(play.http.secret.key)";
+        String secret = "changeme";
         Algorithm algorithm = Algorithm.HMAC256(secret);
         return JWT.create()
                 .withIssuer("excerciseApi")
