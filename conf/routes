@@ -12,22 +12,22 @@ POST          /api/authenticate/ controllers.HomeController.authenticate(request
 GET           /api/dashboard/           controllers.DashboardControllers.all(request: Request)
 
 GET           /api/dashboard/:id        controllers.DashboardControllers.findById(id: String)
-
++ nocsrf
 POST          /api/dashboard/           controllers.DashboardControllers.save(request: Request)
-
++ nocsrf
 PUT           /api/dashboard/           controllers.DashboardControllers.update(request: Request)
-
++ nocsrf
 DELETE        /api/dashboard/           controllers.DashboardControllers.delete(request: Request)
 
 #CONTENTS
 GET           /api/content/             controllers.ContentController.all(request: Request)
 
 GET           /api/content/:id          controllers.ContentController.findById(id: String)
-
++ nocsrf
 POST          /api/content/             controllers.ContentController.save(request: Request)
-
++ nocsrf
 PUT           /api/content/             controllers.ContentController.update(request: Request)
-
++ nocsrf
 DELETE        /api/content/:id          controllers.ContentController.delete(id: String)
 #USERS
 GET           /api/users/           controllers.UserController.allUsers(request: Request)
