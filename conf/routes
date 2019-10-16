@@ -24,7 +24,7 @@ POST   /api/content/         controllers.ContentController.save(request: Request
 
 PUT    /api/content/         controllers.ContentController.update(request: Request)
 
-DELETE /api/content/      controllers.ContentController.delete(request: Request)
+DELETE /api/content/:id      controllers.ContentController.delete(id: String)
 
 #+ noJwtFilter
 #+ nocsrf

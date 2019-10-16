@@ -57,12 +57,14 @@ public class ContentService {
         },context);
     }
 
-    public CompletableFuture<Content> delete(Content resContent,Executor context) {
+    public CompletableFuture<DeleteResult> delete(String contentID,Executor context) {
         return CompletableFuture.supplyAsync(()-> {
             MongoCollection<Content> content = database.getCollection("Content",Content.class);
-            DeleteResult deleteResult = content.deleteOne(new BasicDBObject("_id",resContent.getId()));
+            BasicDBObject query = new BasicDBObject();
+            query.put("_id", new ObjectId(contentID));
+            DeleteResult deleteResult = content.deleteOne(query);
             System.out.println(deleteResult);
-            return resContent;
+            return  deleteResult;
         },context);
     }
 }
