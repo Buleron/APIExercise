@@ -30,10 +30,8 @@ public class ContentController {
                   .thenApply(Results::ok)
                   .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception,messagesApi));
      }
-
      public CompletableFuture<Result> findById(String id){
-          return ServiceUtils.parseBodyOfType(context.current(), Content.class)
-                  .thenCompose((item) -> new ContentService(mongoDB.getDatabase()).findById(id,context.current()))
+          return CompletableFuture.supplyAsync(() -> new ContentService(mongoDB.getDatabase()).findById(id,context.current()))
                   .thenCompose(ServiceUtils::toJsonNode)
                   .thenApply(Results::ok)
                   .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception,messagesApi));

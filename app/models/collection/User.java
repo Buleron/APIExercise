@@ -6,7 +6,6 @@ import models.Roles;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Entity(value = "users", noClassnameStored = true)
 public @Data
 class User {
     private String username;

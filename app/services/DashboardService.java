@@ -20,14 +20,14 @@ import java.util.concurrent.Executor;
 
 public class DashboardService {
     private MongoDatabase database;
-
+    private static String collectionName = "Dashboard";
     public DashboardService(MongoDatabase database) {
         this.database = database;
     }
 
     public CompletableFuture<List<Dashboard>> all(Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
+            MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
             ArrayList<Dashboard> dash = dashboards.find().into(new ArrayList<>());
             if (dash.isEmpty())
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
@@ -37,7 +37,7 @@ public class DashboardService {
 
     public CompletableFuture<Dashboard> findById(String t, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
+            MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(t));
             Dashboard dash = dashboards.find(query).first();
@@ -49,7 +49,7 @@ public class DashboardService {
 
     public CompletableFuture<Dashboard> save(Dashboard which, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
+            MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
             which.setId(new ObjectId());
             dashboards.insertOne(which);
             return which;
@@ -58,7 +58,7 @@ public class DashboardService {
 
     public CompletableFuture<Dashboard> update(Dashboard which, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
+            MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
             UpdateResult updateResult = dashboards.updateOne(Filters.eq("_id", which.getId()), new BasicDBObject("$set", which));
             if (updateResult.isModifiedCountAvailable())
                 return which;
@@ -68,7 +68,7 @@ public class DashboardService {
 
     public CompletableFuture<DeleteResult> delete(Dashboard which, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Dashboard> dashboards = database.getCollection("Dashboard", Dashboard.class);
+            MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
             DeleteResult deleteResult = dashboards.deleteOne(new BasicDBObject("_id", which.getId()));
             if (deleteResult.wasAcknowledged())
                 return deleteResult;

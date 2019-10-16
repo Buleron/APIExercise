@@ -9,12 +9,10 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import models.Response;
 import models.collection.Content;
 import models.exceptions.RequestException;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import play.Logger;
 import play.mvc.Http;
 
 import java.util.ArrayList;
@@ -25,14 +23,14 @@ import java.util.concurrent.Executor;
 
 public class ContentService {
     private MongoDatabase database;
-
+    private static String collectionName = "Content";
     public ContentService(MongoDatabase mongoDatabase) {
         this.database = mongoDatabase;
     }
 
     public CompletableFuture<List<Document>> all(Executor executor) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Document> content = database.getCollection("Content");
+            MongoCollection<Document> content = database.getCollection(collectionName);
            ArrayList<Document> doc  = content.find().into(new ArrayList<>());
            if(doc.isEmpty())
                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
@@ -42,7 +40,7 @@ public class ContentService {
 
     public CompletableFuture<Document> findById(String x, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Document> content = database.getCollection("Content");
+            MongoCollection<Document> content = database.getCollection(collectionName);
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(x));
             Document doc = content.find(query).first();
@@ -54,7 +52,7 @@ public class ContentService {
 
     public CompletableFuture<Content> save(Content resContent, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection("Content", Content.class);
+            MongoCollection<Content> content = database.getCollection(collectionName, Content.class);
                 resContent.setId(new ObjectId());
                 content.insertOne(resContent);
             return resContent;
@@ -63,7 +61,7 @@ public class ContentService {
 
     public CompletableFuture<Content> update(Content resContent, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection("Content", Content.class);
+            MongoCollection<Content> content = database.getCollection(collectionName, Content.class);
             UpdateResult updateResult = content.updateOne(Filters.eq("_id", resContent.getId()), new BasicDBObject("$set", resContent));
             if (updateResult.isModifiedCountAvailable())
                 return resContent;
@@ -73,7 +71,7 @@ public class ContentService {
 
     public CompletableFuture<DeleteResult> delete(String contentID, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection("Content", Content.class);
+            MongoCollection<Content> content = database.getCollection(collectionName, Content.class);
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(contentID));
             DeleteResult deleteResult = content.deleteOne(query);

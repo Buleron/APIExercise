@@ -5,8 +5,10 @@
 #
 + noJwtFilter
 + nocsrf
+#AUTHENTICATE
 POST          /api/authenticate/ controllers.HomeController.authenticate(request: Request)
 
+#DASHBOARDS
 GET           /api/dashboard/           controllers.DashboardControllers.all(request: Request)
 
 GET           /api/dashboard/:id        controllers.DashboardControllers.findById(id: String)
@@ -17,7 +19,7 @@ PUT           /api/dashboard/           controllers.DashboardControllers.update(
 
 DELETE        /api/dashboard/           controllers.DashboardControllers.delete(request: Request)
 
-
+#CONTENTS
 GET           /api/content/             controllers.ContentController.all(request: Request)
 
 GET           /api/content/:id          controllers.ContentController.findById(id: String)
@@ -27,30 +29,5 @@ POST          /api/content/             controllers.ContentController.save(reque
 PUT           /api/content/             controllers.ContentController.update(request: Request)
 
 DELETE        /api/content/:id          controllers.ContentController.delete(id: String)
-
-#+ noJwtFilter
-#+ nocsrf
-#GET     /assets/*file     controllers.Assets.versioned(path="/public", file: Asset)
-##+ noJwtFilter
-##+ nocsrf
-#GET   /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
-#+ nocsrf
-#POST /api/dashboard/    controllers.DashboardControllers.createDashboard(request: Request)
-#+ nocsrf
-#PUT /api/dashboard/    controllers.DashboardControllers.updateDashboard(request: Request)
-#+ nocsrf
-#GET /api/dashboard/all    controllers.DashboardControllers.getAllDashboards()
-#+ nocsrf
-#GET /api/dashboard/    controllers.DashboardControllers.getDashboardById(request: Request)
-#+ nocsrf
-#DELETE /api/dashboard/    controllers.DashboardControllers.deleteDashboard(request: Request)
-#+ nocsrf
-#POST /api/content/    controllers.ContentController.createContent(request: Request)
-#+ nocsrf
-#PUT /api/content/    controllers.ContentController.updateContent(request: Request)
-#+ nocsrf
-#GET /api/content/    controllers.ContentController.getContentById(request: Request)
-#+ nocsrf
-#DELETE /api/content/    controllers.ContentController.deleteContent(request: Request)
-#+ nocsrf
-#GET /api/content/all    controllers.ContentController.getAllContent()
+#USERS
+GET           /api/users/           controllers.UserController.allUsers(request: Request)
