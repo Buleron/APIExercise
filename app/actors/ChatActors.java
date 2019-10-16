@@ -7,7 +7,7 @@ import akka.cluster.pubsub.DistributedPubSubMediator;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.cluster.pubsub.DistributedPubSub;
-import models.User;
+import models.collection.User;
 import models.enums.SocketMessageTypes;
 
 import java.util.HashSet;
@@ -39,7 +39,7 @@ public class ChatActors extends AbstractActor {
 
         mediator.tell(new DistributedPubSubMediator.Subscribe(roomId, getSelf()), getSelf());
 
-        users.add(user.getId());
+       // users.add(user.getId());
     }
 
     public static class JoinedRoom {

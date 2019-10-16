@@ -2,29 +2,31 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 # An example controller showing a sample home page
-#+ noJwtFilter
-#GET /api/authenticate/   controllers.HomeController.authenticate(request: Request)
+#
++ noJwtFilter
++ nocsrf
+POST          /api/authenticate/ controllers.HomeController.authenticate(request: Request)
 
-GET    /api/dashboard/         controllers.DashboardControllers.all(request: Request)
+GET           /api/dashboard/           controllers.DashboardControllers.all(request: Request)
 
-GET    /api/dashboard/:id      controllers.DashboardControllers.findById(id: String)
+GET           /api/dashboard/:id        controllers.DashboardControllers.findById(id: String)
 
-POST   /api/dashboard/         controllers.DashboardControllers.save(request: Request)
+POST          /api/dashboard/           controllers.DashboardControllers.save(request: Request)
 
-PUT    /api/dashboard/         controllers.DashboardControllers.update(request: Request)
+PUT           /api/dashboard/           controllers.DashboardControllers.update(request: Request)
 
-DELETE /api/dashboard/      controllers.DashboardControllers.delete(request: Request)
+DELETE        /api/dashboard/           controllers.DashboardControllers.delete(request: Request)
 
 
-GET    /api/content/         controllers.ContentController.all(request: Request)
+GET           /api/content/             controllers.ContentController.all(request: Request)
 
-GET    /api/content/:id      controllers.ContentController.findById(id: String)
+GET           /api/content/:id          controllers.ContentController.findById(id: String)
 
-POST   /api/content/         controllers.ContentController.save(request: Request)
+POST          /api/content/             controllers.ContentController.save(request: Request)
 
-PUT    /api/content/         controllers.ContentController.update(request: Request)
+PUT           /api/content/             controllers.ContentController.update(request: Request)
 
-DELETE /api/content/:id      controllers.ContentController.delete(id: String)
+DELETE        /api/content/:id          controllers.ContentController.delete(id: String)
 
 #+ noJwtFilter
 #+ nocsrf

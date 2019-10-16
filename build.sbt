@@ -6,7 +6,7 @@ version := "3.0.3"
 val akkaVersion = "2.5.22"
 
 scalaVersion := "2.12.8"
-//libraryDependencies += "com.auth0" % "java-jwt" % "3.3.0"
+libraryDependencies += "com.auth0" % "java-jwt" % "3.3.0"
 libraryDependencies ++= Seq(
   guice,
   ws,
