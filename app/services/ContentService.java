@@ -8,6 +8,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import models.collection.Content;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
@@ -22,17 +23,17 @@ public class ContentService {
         this.database = mongoDatabase;
     }
 
-    public CompletableFuture<List<Content>> all(Executor executor) {
+    public CompletableFuture<List<Document>> all(Executor executor) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection("Content",Content.class);
-            content.find().into(new ArrayList<>());
-            return null;
+            MongoCollection<Document> content = database.getCollection("Content");
+            return content.find().into(new ArrayList<>());
+
         },executor);
     }
 
-    public CompletableFuture<Content> findById(String x,Executor context) {
+    public CompletableFuture<Document> findById(String x,Executor context) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection("Content",Content.class);
+            MongoCollection<Document> content = database.getCollection("Content");
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(x));
             return content.find(query).first();
