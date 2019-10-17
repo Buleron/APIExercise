@@ -11,6 +11,7 @@ import play.mvc.Results;
 import services.DashboardService;
 import utils.DatabaseUtils;
 import utils.ServiceUtils;
+
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
@@ -23,19 +24,20 @@ public class DashboardControllers {
 
     @Inject
     HttpExecutionContext
-    context;
+            context;
 
-    public CompletableFuture<Result> all (Http.Request request) {
+    public CompletableFuture<Result> all(Http.Request request) {
         return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).all(context.current()))
-            .thenCompose(ServiceUtils::toJsonNode)
-            .thenApply(Results::ok)
-            .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
-    }
-    public CompletableFuture<Result> findById(String id){
-        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).findById(id,context.current()))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
-                .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception,messagesApi));
+                .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
+    }
+
+    public CompletableFuture<Result> findById(String id) {
+        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).findById(id, context.current()))
+                .thenCompose(ServiceUtils::toJsonNode)
+                .thenApply(Results::ok)
+                .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
     @BodyParser.Of(BodyParser.Json.class)

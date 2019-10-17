@@ -24,6 +24,7 @@ import java.util.concurrent.Executor;
 public class ContentService {
     private MongoDatabase database;
     private static String collectionName = "Content";
+
     public ContentService(MongoDatabase mongoDatabase) {
         this.database = mongoDatabase;
     }
@@ -31,10 +32,10 @@ public class ContentService {
     public CompletableFuture<List<Document>> all(Executor executor) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Document> content = database.getCollection(collectionName);
-           ArrayList<Document> doc  = content.find().into(new ArrayList<>());
-            if(doc == null)
-               throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
-           return doc;
+            ArrayList<Document> doc = content.find().into(new ArrayList<>());
+            if (doc == null)
+                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
+            return doc;
         }, executor);
     }
 
@@ -44,7 +45,7 @@ public class ContentService {
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(x));
             Document doc = content.find(query).first();
-            if(doc == null)
+            if (doc == null)
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
             return doc;
         }, context);
@@ -53,8 +54,8 @@ public class ContentService {
     public CompletableFuture<Content> save(Content resContent, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Content> content = database.getCollection(collectionName, Content.class);
-                resContent.setId(new ObjectId());
-                content.insertOne(resContent);
+            resContent.setId(new ObjectId());
+            content.insertOne(resContent);
             return resContent;
         }, context);
     }
