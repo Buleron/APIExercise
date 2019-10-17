@@ -11,7 +11,6 @@ import models.exceptions.RequestException;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import play.mvc.Http;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

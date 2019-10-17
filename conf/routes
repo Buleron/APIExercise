@@ -30,4 +30,15 @@ PUT           /api/content/             controllers.ContentController.update(req
 + nocsrf
 DELETE        /api/content/:id          controllers.ContentController.delete(id: String)
 #USERS
-GET           /api/users/           controllers.UserController.allUsers(request: Request)
+GET           /api/users/             controllers.UserController.allUsers(request: Request)
+
+GET           /api/users/:id          controllers.UserController.findById(id: String)
++ nocsrf
+POST          /api/users/             controllers.UserController.save(request: Request)
++ nocsrf
+PUT           /api/users/             controllers.UserController.update(request: Request)
++ nocsrf
+DELETE        /api/users/:id          controllers.UserController.delete(id: String)
+#USERS
+
+
