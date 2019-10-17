@@ -24,7 +24,7 @@ public class UserService {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<User> usr = database.getCollection("users", User.class);
             ArrayList<User> dash = usr.find().into(new ArrayList<>());
-            if (dash.isEmpty())
+            if (dash == null)
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
             return dash;
         }, context);

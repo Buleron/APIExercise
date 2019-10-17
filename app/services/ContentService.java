@@ -32,7 +32,7 @@ public class ContentService {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Document> content = database.getCollection(collectionName);
            ArrayList<Document> doc  = content.find().into(new ArrayList<>());
-           if(doc.isEmpty())
+            if(doc == null)
                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
            return doc;
         }, executor);
@@ -44,7 +44,7 @@ public class ContentService {
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(x));
             Document doc = content.find(query).first();
-            if(doc.isEmpty())
+            if(doc == null)
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
             return doc;
         }, context);
@@ -63,7 +63,7 @@ public class ContentService {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Content> content = database.getCollection(collectionName, Content.class);
             UpdateResult updateResult = content.updateOne(Filters.eq("_id", resContent.getId()), new BasicDBObject("$set", resContent));
-            if (updateResult.isModifiedCountAvailable())
+            if (updateResult.getModifiedCount() > 0)
                 return resContent;
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, updateResult));
         }, context);
@@ -75,7 +75,7 @@ public class ContentService {
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(contentID));
             DeleteResult deleteResult = content.deleteOne(query);
-            if (deleteResult.wasAcknowledged())
+            if (deleteResult.getDeletedCount() > 0)
                 return deleteResult;
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, deleteResult));
         }, context);

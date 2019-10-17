@@ -17,7 +17,7 @@ POST          /api/dashboard/           controllers.DashboardControllers.save(re
 + nocsrf
 PUT           /api/dashboard/           controllers.DashboardControllers.update(request: Request)
 + nocsrf
-DELETE        /api/dashboard/           controllers.DashboardControllers.delete(request: Request)
+DELETE        /api/dashboard/:id           controllers.DashboardControllers.delete(id: String)
 
 #CONTENTS
 GET           /api/content/             controllers.ContentController.all(request: Request)

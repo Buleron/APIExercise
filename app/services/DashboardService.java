@@ -29,7 +29,7 @@ public class DashboardService {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
             ArrayList<Dashboard> dash = dashboards.find().into(new ArrayList<>());
-            if (dash.isEmpty())
+            if (dash == null)
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
             return dash;
         }, context);
@@ -60,17 +60,19 @@ public class DashboardService {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
             UpdateResult updateResult = dashboards.updateOne(Filters.eq("_id", which.getId()), new BasicDBObject("$set", which));
-            if (updateResult.isModifiedCountAvailable())
+            if (updateResult.getModifiedCount() > 0)
                 return which;
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, updateResult));
         }, context);
     }
 
-    public CompletableFuture<DeleteResult> delete(Dashboard which, Executor context) {
+    public CompletableFuture<DeleteResult> delete(String id, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
-            DeleteResult deleteResult = dashboards.deleteOne(new BasicDBObject("_id", which.getId()));
-            if (deleteResult.wasAcknowledged())
+            BasicDBObject query = new BasicDBObject();
+            query.put("_id", new ObjectId(id));
+            DeleteResult deleteResult = dashboards.deleteOne(query);
+            if (deleteResult.getDeletedCount() > 0)
                 return deleteResult;
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, deleteResult));
         }, context);

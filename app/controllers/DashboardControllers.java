@@ -32,8 +32,7 @@ public class DashboardControllers {
             .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
     public CompletableFuture<Result> findById(String id){
-        return ServiceUtils.parseBodyOfType(context.current(),Dashboard.class)
-                .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).findById(id,context.current()))
+        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).findById(id,context.current()))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception,messagesApi));
@@ -57,10 +56,8 @@ public class DashboardControllers {
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    @BodyParser.Of(BodyParser.Json.class)
-    public CompletableFuture<Result> delete(Http.Request request) {
-        return ServiceUtils.parseBodyOfType(context.current(), Dashboard.class)
-                .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).delete(item, context.current()))
+    public CompletableFuture<Result> delete(String id) {
+        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).delete(id, context.current()))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
