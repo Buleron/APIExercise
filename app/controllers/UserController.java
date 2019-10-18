@@ -3,6 +3,7 @@ package controllers;
 import models.collection.Dashboard;
 import models.collection.User;
 import mongo.MongoDB;
+import oauth2.Authenticated;
 import play.i18n.MessagesApi;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
@@ -18,6 +19,7 @@ import utils.ServiceUtils;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
+@Authenticated
 public class UserController {
 
     @Inject

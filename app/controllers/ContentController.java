@@ -1,6 +1,7 @@
 package controllers;
 
 import models.collection.Content;
+import oauth2.Authenticated;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import mongo.MongoDB;
@@ -15,6 +16,7 @@ import utils.ServiceUtils;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
+@Authenticated()
 public class ContentController {
 
     @Inject

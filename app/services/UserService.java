@@ -9,7 +9,10 @@ import com.mongodb.client.result.UpdateResult;
 import models.collection.User;
 import models.exceptions.RequestException;
 import org.bson.types.ObjectId;
+import play.core.j.HttpExecutionContext;
 import play.mvc.Http;
+
+import javax.xml.ws.http.HTTPException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -28,11 +31,14 @@ public class UserService {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<User> usr = database.getCollection(collectionName, User.class);
             ArrayList<User> dash = usr.find().into(new ArrayList<>());
-            if (dash == null)
+            if (dash == null) {
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
+            }
+            //Todo Set Authorisation
             return dash;
         }, context);
     }
+
 
     public CompletableFuture<User> findById(String t, Executor context) {
         return CompletableFuture.supplyAsync(() -> {

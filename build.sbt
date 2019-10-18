@@ -14,6 +14,8 @@ libraryDependencies ++= Seq(
   "org.projectlombok" % "lombok" % "1.16.20",
   "org.hibernate" % "hibernate-validator" % "6.0.17.Final",
   "org.mongodb" % "mongo-java-driver" % "3.6.4",
+  "com.nulab-inc" %% "scala-oauth2-core" % "1.3.0",
+  "com.nulab-inc" %% "play2-oauth2-provider" % "1.3.0",
   // akka related stuff
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
@@ -21,6 +23,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
   "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,
+  "org.mindrot" % "jbcrypt" % "0.3m",
 )
 resolvers += Resolver.url("Typesafe Ivy releases", url("https://repo.typesafe.com/typesafe/ivy-releases"))(Resolver.ivyStylePatterns)
 

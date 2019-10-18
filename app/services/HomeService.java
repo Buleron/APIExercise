@@ -39,6 +39,9 @@ public class HomeService {
                 String token = getSignedToken(user.getUsername());
                 doc.clear();
                 doc.append("token", token);
+                // expiry, client,
+                // store it to mongo
+
             } catch (UnsupportedEncodingException e) {
                 Logger.of(e.getMessage());
                 e.printStackTrace();

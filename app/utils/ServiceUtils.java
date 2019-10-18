@@ -222,5 +222,12 @@ public class ServiceUtils {
 		}
 		return null;
 	}
+    public static String extractToken(Request request) {
+        String authorization = request.getHeaders().get("Authorization").get();
+        if(authorization != null) {
+            return authorization.replace("Bearer ", "");
+        }
+        return "";
+    }
     
 }

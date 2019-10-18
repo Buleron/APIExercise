@@ -1,9 +1,13 @@
 package controllers;
 
 import models.collection.Dashboard;
+import models.collection.User;
 import mongo.MongoDB;
+import oauth2.Authenticated;
+import oauth2.PlatformAttributes;
 import play.i18n.MessagesApi;
 import play.libs.concurrent.HttpExecutionContext;
+import play.libs.typedmap.TypedKey;
 import play.mvc.BodyParser;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -15,6 +19,7 @@ import utils.ServiceUtils;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
+@Authenticated()
 public class DashboardControllers {
 
     @Inject
@@ -27,7 +32,8 @@ public class DashboardControllers {
             context;
 
     public CompletableFuture<Result> all(Http.Request request) {
-        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).all(context.current()))
+        User user = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).all(context.current(), user))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
@@ -49,7 +55,6 @@ public class DashboardControllers {
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    @BodyParser.Of(BodyParser.Json.class)
     public CompletableFuture<Result> update(Http.Request request) {
         return ServiceUtils.parseBodyOfType(context.current(), Dashboard.class)
                 .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).update(item, context.current()))

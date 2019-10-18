@@ -3,40 +3,55 @@
 # ~~~~
 # An example controller showing a sample home page
 #
+#AUTHENTICATE
 + noJwtFilter
 + nocsrf
-#AUTHENTICATE
 POST          /api/authenticate/ controllers.HomeController.authenticate(request: Request)
 
 #DASHBOARDS
++ noJwtFilter
++ nocsrf
 GET           /api/dashboard/           controllers.DashboardControllers.all(request: Request)
 
++ noJwtFilter
++ nocsrf
 GET           /api/dashboard/:id        controllers.DashboardControllers.findById(id: String)
++ noJwtFilter
 + nocsrf
 POST          /api/dashboard/           controllers.DashboardControllers.save(request: Request)
++ noJwtFilter
 + nocsrf
 PUT           /api/dashboard/           controllers.DashboardControllers.update(request: Request)
++ noJwtFilter
 + nocsrf
 DELETE        /api/dashboard/:id           controllers.DashboardControllers.delete(id: String)
 
 #CONTENTS
 GET           /api/content/             controllers.ContentController.all(request: Request)
-
++ noJwtFilter
++ nocsrf
 GET           /api/content/:id          controllers.ContentController.findById(id: String)
++ noJwtFilter
 + nocsrf
 POST          /api/content/             controllers.ContentController.save(request: Request)
++ noJwtFilter
 + nocsrf
 PUT           /api/content/             controllers.ContentController.update(request: Request)
++ noJwtFilter
 + nocsrf
 DELETE        /api/content/:id          controllers.ContentController.delete(id: String)
 #USERS
 GET           /api/users/             controllers.UserController.allUsers(request: Request)
-
++ noJwtFilter
++ nocsrf
 GET           /api/users/:id          controllers.UserController.findById(id: String)
++ noJwtFilter
 + nocsrf
 POST          /api/users/             controllers.UserController.save(request: Request)
++ noJwtFilter
 + nocsrf
 PUT           /api/users/             controllers.UserController.update(request: Request)
++ noJwtFilter
 + nocsrf
 DELETE        /api/users/:id          controllers.UserController.delete(id: String)
 #USERS

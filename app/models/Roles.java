@@ -5,6 +5,6 @@ import lombok.Data;
 public @Data
 class Roles {
 //    @Id
-    private int id;
+    private String id;
     private String name;
 }
