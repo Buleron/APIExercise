@@ -32,11 +32,6 @@ public class MongoDB {
     private MongoDatabase database;
     private MongoClient client;
 //    private static Datastore datastore;
-    protected static final int MAX_CONNECTION_IDLE_TIME = 5 * 60 * 1000;
-    protected static final int MAX_CONNECTION_LIFETIME = 10 * 60 * 1000;
-    protected static final int MAX_CONNECTIONS_PER_HOST = 5;
-    public static final String DB_ACCESS_CONTROL = "access";
-    public static final String DB_COLUMNS = "columns";
 
     @Inject
     public MongoDB(ApplicationLifecycle lifecycle, Config config) {
@@ -65,15 +60,5 @@ public class MongoDB {
 
         CodecRegistry pojoCodecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(), fromProviders(pojoCodecProvider));
         this.database = database.withCodecRegistry(pojoCodecRegistry);
-    }
-    public CompletableFuture<MongoDatabase> getMongoDatabaseAsync() {
-        CompletableFuture<MongoDatabase> promise = new CompletableFuture<>();
-        try {
-            MongoDatabase connection = this.getDatabase();
-            promise.complete(connection);
-        } catch (NullPointerException ex) {
-            promise.completeExceptionally(ex);
-        }
-        return promise;
     }
 }

@@ -32,37 +32,18 @@ public class DashboardService {
         this.database = database;
     }
 
-    public DashboardService withReadAccess() {
-        AuthInfo<User> authInfo = (AuthInfo<User>) ctx().args.get("authInfo");
-        return withReadAccess(authInfo.user());
-    }
-
-    public DashboardService withReadAccess(User user) {
-//        setReadAccess(user);
-        return this;
-    }
-
-    public DashboardService withWriteAccess() {
-        AuthInfo<User> authInfo = (AuthInfo<User>) ctx().args.get("authInfo");
-        return withWriteAccess(authInfo.user());
-    }
-
-    public DashboardService withWriteAccess(User user) {
-//        setWriteAccess(user);
-        return this;
-    }
-
 
     public CompletableFuture<List<Dashboard>> all(Executor context, User user) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
             FindIterable<Dashboard> find = dashboards.find();
 
-            List<String> access = new ArrayList<>();
-            List<String> roles = user.getRoles().stream().map(next -> next.getId()).collect(Collectors.toList());
-            access.addAll(roles);
-            access.add(user.getId().toString());
-            access.add("*");
+            List<Integer> access = new ArrayList<>();
+            List<Integer> roles = user.getRoles().stream().map(next -> next.getId()).collect(Collectors.toList());
+            System.out.println(roles);
+//            access.addAll(roles);
+//            access.add(user.getId());
+//            access.add("*");
             // add filters, based on user access
             ArrayList<Dashboard> dash = find
                     .filter(Filters.or(Filters.in(READ_ACL, access), Filters.size(READ_ACL, 0)))
