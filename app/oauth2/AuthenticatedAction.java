@@ -48,7 +48,7 @@ public class AuthenticatedAction extends Action<Authenticated>  {
 			if (!authorization.isPresent()) {
 				throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "access_forbidden"));
 			}
-			// Bearer asfasdgasdgahg
+			// Bearer if token is not bearer type throw out
 			String token = authorization.get();
 			if(!token.contains("Bearer ")){
 				throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "No bearer token type"));
@@ -75,9 +75,10 @@ public class AuthenticatedAction extends Action<Authenticated>  {
 				// if user not found, throw unathorized
 				throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "access_forbidden"));
 			}
-		}, context.current()).thenComposeAsync((user) -> {
+		}, context.current()).thenCompose((user) -> {
 			req.addAttr(PlatformAttributes.AUTHENTICATED_USER, user);
-			return delegate.call(req);
+			delegate.call(req);
+
 		}).exceptionally((exception) -> {
 			exception.printStackTrace();
 			return DatabaseUtils.resultFromThrowable(exception, messagesApi);
