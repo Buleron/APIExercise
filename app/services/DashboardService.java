@@ -16,7 +16,9 @@ import play.mvc.Http;
 import scalaoauth2.provider.AuthInfo;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
@@ -37,8 +39,10 @@ public class DashboardService {
     public CompletableFuture<List<Dashboard>> all(Executor context, User user) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
+
             FindIterable<Dashboard> find = dashboards.find();
             List<String> access = new ArrayList<>();
+
             List<String> roles = user.getRoles().stream().map(next -> next.getId()).collect(Collectors.toList());
             System.out.println(roles);
             access.addAll(roles);
@@ -57,6 +61,7 @@ public class DashboardService {
     public CompletableFuture<Dashboard> findById(String t, Executor context,User user) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
+
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(t));
 
@@ -77,16 +82,11 @@ public class DashboardService {
     public CompletableFuture<Dashboard> save(Dashboard which, Executor context,User user) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
-            //todo check up how to know if this user has access to create new dashboard :) :P :/
-            List<String> access = new ArrayList<>();
-            List<String> roles = user.getRoles().stream().map(next -> next.getId()).collect(Collectors.toList());
-            System.out.println(roles);
-            access.addAll(roles);
+            //todo set access for user that create this :/
+            Set<String> access = new HashSet<>();
             access.add(user.getId().toString());
-            access.add("*");
-
-            Dashboard dash = dashboards.find().filter(Filters.or(Filters.in(WRITE_ACL, access), Filters.size(WRITE_ACL, 0))).first();
-
+            which.setWriteACL(access);
+            which.setReadACL(access);
             which.setId(new ObjectId());
             dashboards.insertOne(which);
             return which;
