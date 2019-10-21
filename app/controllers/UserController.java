@@ -19,7 +19,7 @@ import utils.ServiceUtils;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
-@Authenticated
+//@Authenticated()
 public class UserController {
 
     @Inject

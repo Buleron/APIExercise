@@ -29,8 +29,8 @@ import static org.bson.codecs.pojo.Conventions.ANNOTATION_CONVENTION;
 @Singleton
 public class MongoDB {
     @Getter
-    private MongoDatabase database;
-    private MongoClient client;
+    MongoDatabase database;
+    MongoClient client;
 //    private static Datastore datastore;
 
     @Inject

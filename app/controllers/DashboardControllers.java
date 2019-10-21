@@ -32,15 +32,16 @@ public class DashboardControllers {
             context;
 
     public CompletableFuture<Result> all(Http.Request request) {
-        User user = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).all(context.current(), user))
+        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).all(context.current(), authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    public CompletableFuture<Result> findById(String id) {
-        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).findById(id, context.current()))
+    public CompletableFuture<Result> findById(String id,Http.Request request) {
+        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).findById(id, context.current(),authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
@@ -48,23 +49,26 @@ public class DashboardControllers {
 
     @BodyParser.Of(BodyParser.Json.class)
     public CompletableFuture<Result> save(Http.Request request) {
+        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return ServiceUtils.parseBodyOfType(context.current(), Dashboard.class)
-                .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).save(item, context.current()))
+                .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).save(item, context.current(),authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
     public CompletableFuture<Result> update(Http.Request request) {
+        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return ServiceUtils.parseBodyOfType(context.current(), Dashboard.class)
-                .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).update(item, context.current()))
+                .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).update(item, context.current(),authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    public CompletableFuture<Result> delete(String id) {
-        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).delete(id, context.current()))
+    public CompletableFuture<Result> delete(String id,Http.Request request) {
+        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+        return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).delete(id, context.current(),authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));

@@ -31,7 +31,7 @@ public class AuthenticatedAction extends Action<Authenticated>  {
 	@Inject
 	MongoDB mongoDB;
 	@Inject
-    MessagesApi messagesApi;
+	MessagesApi messagesApi;
 
 	@javax.inject.Inject
 	HttpExecutionContext context;
@@ -76,9 +76,9 @@ public class AuthenticatedAction extends Action<Authenticated>  {
 				throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "access_forbidden"));
 			}
 		}, context.current()).thenCompose((user) -> {
-			req.addAttr(PlatformAttributes.AUTHENTICATED_USER, user);
-			delegate.call(req);
-
+			// Put a User object into the request
+			Http.Request newReq = req.addAttr(PlatformAttributes.AUTHENTICATED_USER, user);
+			return	delegate.call(newReq);
 		}).exceptionally((exception) -> {
 			exception.printStackTrace();
 			return DatabaseUtils.resultFromThrowable(exception, messagesApi);

@@ -15,7 +15,7 @@ GET           /api/dashboard/           controllers.DashboardControllers.all(req
 
 + noJwtFilter
 + nocsrf
-GET           /api/dashboard/:id        controllers.DashboardControllers.findById(id: String)
+GET           /api/dashboard/:id        controllers.DashboardControllers.findById(id: String,request: Request)
 + noJwtFilter
 + nocsrf
 POST          /api/dashboard/           controllers.DashboardControllers.save(request: Request)
@@ -24,7 +24,7 @@ POST          /api/dashboard/           controllers.DashboardControllers.save(re
 PUT           /api/dashboard/           controllers.DashboardControllers.update(request: Request)
 + noJwtFilter
 + nocsrf
-DELETE        /api/dashboard/:id           controllers.DashboardControllers.delete(id: String)
+DELETE        /api/dashboard/:id           controllers.DashboardControllers.delete(id: String,request: Request)
 
 #CONTENTS
 GET           /api/content/             controllers.ContentController.all(request: Request)
