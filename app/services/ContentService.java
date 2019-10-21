@@ -24,75 +24,68 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
 
-import static utils.Constants.READ_ACL;
-import static utils.Constants.WRITE_ACL;
+import static utils.Constants.*;
 
 public class ContentService {
     private MongoDatabase database;
-    private static String collectionName = "Content";
+    private AccessService accessService = new AccessService();
 
     public ContentService(MongoDatabase mongoDatabase) {
         this.database = mongoDatabase;
     }
 
-    public CompletableFuture<List<Content>> all(Executor executor, User authUser) {
+    public CompletableFuture<List<Document>> all(Executor executor, User authUser) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection(collectionName,Content.class);
-            FindIterable<Content> doc = content.find();
+            MongoCollection<Document> content = database.getCollection(CONTENT, Document.class);
 
-            List<String> access = new ArrayList<>();
-            List<String> roles = authUser.getRoles().stream().map( next -> next.getId()).collect(Collectors.toList());
-            System.out.println(roles);
-            access.addAll(roles);
-            access.add(authUser.getId().toString());
-            access.add("*");
+            if (content.find().into(new ArrayList<>()) == null)
+                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
 
-            ArrayList<Content> res  = doc
-                    .filter(Filters.or(Filters.in(READ_ACL,access),Filters.size(READ_ACL,0)))
+            FindIterable<Document> doc = content.find();
+            List<String> access = accessService.GetAccesses(authUser);
+            return doc
+                    .filter(Filters.or(Filters.in(READ_ACL, access), Filters.size(READ_ACL, 0)))
                     .into(new ArrayList<>());
-
-            if (res == null)
-                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
-            return res;
         }, executor);
     }
 
-    public CompletableFuture<Content> findById(String x, Executor context, User authUser) {
+    public CompletableFuture<Document> findById(String x, Executor context, User authUser) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection(collectionName,Content.class);
+            MongoCollection<Document> content = database.getCollection(CONTENT, Document.class);
 
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(x));
 
-            List<String> access = new ArrayList<>();
-            List<String> roles = authUser.getRoles().stream().map(next -> next.getId()).collect(Collectors.toList());
-            System.out.println(roles);
-            access.addAll(roles);
-            access.add(authUser.getId().toString());
-            access.add("*");
+            if (content.find(query).first() == null)
+                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
 
-            Content doc = content.find(query).filter(Filters.or(Filters.in(READ_ACL,access),Filters.size(READ_ACL,0))).first();
+            List<String> access = accessService.GetAccesses(authUser);
+            Document doc = content.find(Filters.and(Filters.or(Filters.in(READ_ACL, access), Filters.size(READ_ACL, 0)), Filters.in("_id", new ObjectId(x)))).first();
 
             if (doc == null)
-                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Nothing founded"));
+                throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, PERMISSION_DENIED));
             return doc;
         }, context);
     }
 
-    public CompletableFuture<Content> save(Content resContent, Executor context, User AuthUser) {
+    public CompletableFuture<Content> save(Content resContent, Executor context, User authUser) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection(collectionName, Content.class);
+            MongoCollection<Content> content = database.getCollection(CONTENT, Content.class);
 
-            Set<String> access = new HashSet<>();
-            //todo add accesses for its own creator;
-            access.add(AuthUser.getId().toString());
+            Set<String> generalAccesses = new HashSet<>();
+            //todo set access for user that create this :/
+            generalAccesses.add(authUser.getId().toString());
             //todo or set it as public :/
-            access.add("*");
+//            generalAccesses.add("*");
+            Set<String> read = new HashSet<>(generalAccesses);
+            Set<String> write = new HashSet<>(generalAccesses);
 
-            resContent.setReadACL(access);
-            resContent.setWriteACL(access);
+            read.addAll(resContent.getReadACL());
+            write.addAll(resContent.getReadACL());
+
+            resContent.setReadACL(read);
+            resContent.setWriteACL(write);
 
             resContent.setId(new ObjectId());
             content.insertOne(resContent);
@@ -100,54 +93,49 @@ public class ContentService {
         }, context);
     }
 
-    public CompletableFuture<Content> update(Content resContent, Executor context, User AuthUser) {
+    public CompletableFuture<Content> update(Content resContent, Executor context, User authUser) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection(collectionName, Content.class);
-
-            List<String> access = new ArrayList<>();
-            List<String> roles = AuthUser.getRoles().stream().map(next -> next.getId()).collect(Collectors.toList());
-            System.out.println(roles);
-            access.addAll(roles);
-            access.add(AuthUser.getId().toString());
-            access.add("*");
+            MongoCollection<Document> content = database.getCollection(CONTENT);
 
             BasicDBObject query = new BasicDBObject();
             query.put("_id", resContent.getId());
 
-            Content cont = content.find(query).filter(Filters.or(Filters.in(WRITE_ACL, access), Filters.size(WRITE_ACL, 0))).first();
-            if(cont == null){
-                throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED,"Permission denied"));
-            }
+            if (content.find(query).first() == null)
+                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
 
-            UpdateResult updateResult = content.updateOne(Filters.eq(query), new BasicDBObject("$set", resContent));
+            List<String> access = accessService.GetAccesses(authUser);
+            Document cont = content.find(Filters.and(Filters.or(Filters.in(WRITE_ACL, access), Filters.size(WRITE_ACL, 0)), Filters.in("_id", resContent.getId()))).first();
+
+            if (cont == null)
+                throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, PERMISSION_DENIED));
+
+            UpdateResult updateResult = content.updateOne(Filters.eq("_id", resContent.getId()), new BasicDBObject("$set", resContent));
             if (updateResult.getModifiedCount() > 0)
                 return resContent;
-            throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, updateResult));
+            throw new CompletionException(new RequestException(Http.Status.NOT_MODIFIED, updateResult));
         }, context);
     }
 
-    public CompletableFuture<DeleteResult> delete(String contentID, Executor context, User AuthUser) {
+    public CompletableFuture<DeleteResult> delete(String contentID, Executor context, User authUser) {
         return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection(collectionName, Content.class);
+            MongoCollection<Document> content = database.getCollection(CONTENT);
+
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(contentID));
 
-            List<String> access = new ArrayList<>();
-            List<String> roles = AuthUser.getRoles().stream().map(next -> next.getId()).collect(Collectors.toList());
-            System.out.println(roles);
-            access.addAll(roles);
-            access.add(AuthUser.getId().toString());
-            access.add("*");
+            if (content.find(query).first() == null)
+                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
 
-            Content cont = content.find(query).filter(Filters.or(Filters.in(WRITE_ACL, access), Filters.size(WRITE_ACL, 0))).first();
-            if(cont == null){
-                throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED,"Permission denied"));
-            }
+            List<String> access = accessService.GetAccesses(authUser);
+            Document cont =content.find(Filters.and(Filters.or(Filters.in(WRITE_ACL, access), Filters.size(WRITE_ACL, 0)), Filters.in("_id", new ObjectId(contentID)))).first();
+
+            if (cont == null)
+                throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, PERMISSION_DENIED));
 
             DeleteResult deleteResult = content.deleteOne(query);
             if (deleteResult.getDeletedCount() > 0)
                 return deleteResult;
-            throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, deleteResult));
+            throw new CompletionException(new RequestException(Http.Status.NOT_MODIFIED, deleteResult));
         }, context);
     }
 }

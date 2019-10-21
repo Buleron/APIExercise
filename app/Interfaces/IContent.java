@@ -16,4 +16,7 @@ import models.enums.ContentType;
 })
 public interface IContent {
     ContentType type = ContentType.TEXT;
+    ContentType email = ContentType.EMAIL;
+    ContentType image = ContentType.IMAGE;
+    ContentType line = ContentType.LINE;
 }
