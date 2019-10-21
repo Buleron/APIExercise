@@ -1,8 +1,6 @@
 package services;
 
-import Interfaces.IContent;
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -10,13 +8,11 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import models.collection.Content;
-import models.collection.Dashboard;
 import models.collection.User;
 import models.exceptions.RequestException;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import play.mvc.Http;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-
 import static utils.Constants.*;
 
 public class ContentService {

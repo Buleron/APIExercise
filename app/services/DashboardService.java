@@ -12,7 +12,6 @@ import models.collection.User;
 import models.exceptions.RequestException;
 import org.bson.types.ObjectId;
 import play.mvc.Http;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +19,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-
 import static utils.Constants.*;
 
 public class DashboardService {
@@ -99,7 +97,7 @@ public class DashboardService {
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
 
             List<String> access = accessService.GetAccesses(user);
-            Dashboard dash = dashboards.find(Filters.and(Filters.or(Filters.in(READ_ACL, access), Filters.size(READ_ACL, 0)), Filters.in("_id", which.getId()))).first();
+            Dashboard dash = dashboards.find(Filters.and(Filters.or(Filters.in(WRITE_ACL, access), Filters.size(WRITE_ACL, 0)), Filters.in("_id", which.getId()))).first();
             if (dash == null)
                 throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, PERMISSION_DENIED));
 
