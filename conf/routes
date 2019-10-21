@@ -30,7 +30,7 @@ DELETE        /api/dashboard/:id           controllers.DashboardControllers.dele
 GET           /api/content/             controllers.ContentController.all(request: Request)
 + noJwtFilter
 + nocsrf
-GET           /api/content/:id          controllers.ContentController.findById(id: String)
+GET           /api/content/:id          controllers.ContentController.findById(id: String,request: Request)
 + noJwtFilter
 + nocsrf
 POST          /api/content/             controllers.ContentController.save(request: Request)
@@ -39,7 +39,7 @@ POST          /api/content/             controllers.ContentController.save(reque
 PUT           /api/content/             controllers.ContentController.update(request: Request)
 + noJwtFilter
 + nocsrf
-DELETE        /api/content/:id          controllers.ContentController.delete(id: String)
+DELETE        /api/content/:id          controllers.ContentController.delete(id: String,request: Request)
 #USERS
 GET           /api/users/             controllers.UserController.allUsers(request: Request)
 + noJwtFilter

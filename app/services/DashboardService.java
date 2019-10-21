@@ -82,9 +82,11 @@ public class DashboardService {
     public CompletableFuture<Dashboard> save(Dashboard which, Executor context,User user) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<Dashboard> dashboards = database.getCollection(collectionName, Dashboard.class);
-            //todo set access for user that create this :/
             Set<String> access = new HashSet<>();
+            //todo set access for user that create this :/
             access.add(user.getId().toString());
+            //todo or set it as public :/
+            access.add("*");
             which.setWriteACL(access);
             which.setReadACL(access);
             which.setId(new ObjectId());

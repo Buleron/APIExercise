@@ -86,8 +86,11 @@ public class ContentService {
             MongoCollection<Content> content = database.getCollection(collectionName, Content.class);
 
             Set<String> access = new HashSet<>();
+            //todo add accesses for its own creator;
             access.add(AuthUser.getId().toString());
-            //add accesses for its own creator;
+            //todo or set it as public :/
+            access.add("*");
+
             resContent.setReadACL(access);
             resContent.setWriteACL(access);
 
