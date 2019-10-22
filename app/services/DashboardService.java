@@ -93,13 +93,18 @@ public class DashboardService {
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(which.getId().toString()));
 
-            if (dashboards.find(query).first() == null)
+            Dashboard request = dashboards.find(query).first();
+            if (request == null)
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
 
             List<String> access = accessService.GetAccesses(user);
             Dashboard dash = dashboards.find(Filters.and(Filters.or(Filters.in(WRITE_ACL, access), Filters.size(WRITE_ACL, 0)), Filters.in("_id", which.getId()))).first();
             if (dash == null)
                 throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, PERMISSION_DENIED));
+
+            // overwrite ReadACL & WriteACL;
+            which.setReadACL(request.getReadACL());
+            which.setWriteACL(request.getWriteACL());
 
             UpdateResult updateResult = dashboards.updateOne(Filters.eq("_id", which.getId()), new BasicDBObject("$set", which));
             if (updateResult.getModifiedCount() > 0)

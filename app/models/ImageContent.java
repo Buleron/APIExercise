@@ -2,10 +2,10 @@ package models;
 
 import Interfaces.IContent;
 import lombok.Data;
-import lombok.ToString;
+import models.enums.ContentType;
 
 @Data
-@ToString
 public class ImageContent implements IContent {
+    ContentType type = ContentType.IMAGE;
     private String url;
 }
