@@ -1,7 +1,6 @@
 package services;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -12,8 +11,6 @@ import models.collection.Content;
 import models.collection.User;
 import models.exceptions.RequestException;
 import org.bson.Document;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.types.ObjectId;
 import play.mvc.Http;
 import java.util.ArrayList;
@@ -23,9 +20,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import static utils.Constants.*;
 
 public class ContentService {
@@ -110,9 +104,7 @@ public class ContentService {
             if (cont == null)
                 throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, PERMISSION_DENIED));
 
-            //todo overwrite ReadACL and WriteAcl objects;
-            //todo why does types object in Icontent interface is not appearing as json response;
-            //todo does the reference(dashboard_id) with Contnet(id) is fine?;
+            //todo overwrite ReadACL and WriteAcl
 
             UpdateResult updateResult = content.updateOne(Filters.eq("_id", resContent.getId()), new BasicDBObject("$set", resContent));
             if (updateResult.getModifiedCount() > 0)
