@@ -55,5 +55,3 @@ PUT           /api/users/             controllers.UserController.update(request:
 + nocsrf
 DELETE        /api/users/:id          controllers.UserController.delete(id: String)
 #USERS
-
-
