@@ -5,7 +5,7 @@ version := "2.7.x"
 
 scalaVersion := "2.12.8"
 //version := "3.0.3"
-
+//lazy val models = project.in(file("models")).enablePlugins(PlayScala)
 lazy val root = project.in(file(".")).enablePlugins(PlayScala)
 val akkaVersion = "2.5.22"
 val akkaManagementVersion = "1.0.0"
@@ -48,21 +48,9 @@ resolvers += Resolver.typesafeRepo("releases")
 resolvers += Resolver.sbtPluginRepo("releases")
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
-//lazy val models = project.in(file("models")).enablePlugins(PlayScala)
+
 
 ////.dependsOn(models).aggregate(models)
 //lazy val root = (project in file("."))
 //  .enablePlugins(PlayScala, PlayNettyServer)
 //  .disablePlugins(PlayAkkaHttpServer)
-
-//libraryDependencies += "org.assertj" % "assertj-core" % "3.8.0" % Test
-//libraryDependencies += "org.awaitility" % "awaitility" % "3.0.0" % Test
-
-// Needed to make JUnit report the tests being run
-testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
-
-
-javacOptions ++= Seq(
-  "-Xlint:unchecked",
-  "-Xlint:deprecation"
-)

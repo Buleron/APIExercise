@@ -7,4 +7,5 @@ public class Constants {
     public static final String NOT_FOUND = "Not found";
     public static final String DASHBOARD = "Dashboard";
     public static final String CONTENT = "Content";
+    public static final String CHAT = "chat";
 }

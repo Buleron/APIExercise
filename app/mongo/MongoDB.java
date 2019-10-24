@@ -9,8 +9,10 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import lombok.Data;
 import lombok.Getter;
+import models.collection.chat.ChatMessage;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.ClassModel;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import play.api.inject.ApplicationLifecycle;
 import scala.Function0;
@@ -51,10 +53,14 @@ public class MongoDB {
         String db = config.getString("mongodb.database");
 
         com.mongodb.client.MongoDatabase database = client.getDatabase(db);
+        // add class model if codec error;
+        ClassModel<ChatMessage> chatMessage = ClassModel.builder(ChatMessage.class).enableDiscriminator(true).build();
         CodecProvider pojoCodecProvider =
                 PojoCodecProvider.builder()
                         .conventions(Arrays.asList(ANNOTATION_CONVENTION))
                         .register("models")
+        // and also register class model if codec error;
+                        .register(chatMessage)
                         .automatic(true).build();
 
 

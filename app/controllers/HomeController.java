@@ -11,9 +11,6 @@ import play.mvc.Results;
 import services.HomeService;
 import utils.DatabaseUtils;
 import utils.ServiceUtils;
-import akka.actor.ActorSystem;
-import akka.stream.Materializer;
-import org.webjars.play.WebJarsUtil;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
@@ -39,8 +36,4 @@ public class HomeController extends Controller {
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    @Inject
-    public HomeController(ActorSystem actorSystem, Materializer mat, WebJarsUtil webJarsUtil) {
-
-    }
 }

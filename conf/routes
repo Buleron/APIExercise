@@ -8,6 +8,18 @@
 + nocsrf
 POST          /api/authenticate/ controllers.HomeController.authenticate(request: Request)
 
++ noJwtFilter
++ nocsrf
+GET        /api/chat/socket/:id/token    controllers.ChatController.socket(id:String,token:String)
++ noJwtFilter
++ nocsrf
+GET        /api/chat/:token             controllers.ChatController.tracker(token: String)
++ noJwtFilter
++ nocsrf
+GET           /api/chat                 controllers.ChatController.all(request: Request)
+
+
+
 #DASHBOARDS
 + noJwtFilter
 + nocsrf
