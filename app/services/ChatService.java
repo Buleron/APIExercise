@@ -2,35 +2,25 @@ package services;
 
 import akka.actor.ActorSystem;
 import com.mongodb.BasicDBObject;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.typesafe.config.Config;
-import models.collection.Content;
 import models.collection.User;
 import models.collection.UserToken;
 import models.collection.chat.ChatMessage;
 import models.exceptions.RequestException;
 import mongo.MongoDB;
-import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import play.Logger;
 import play.i18n.MessagesApi;
 import play.mvc.Http;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
-
-import static utils.Constants.*;
-import static utils.Constants.CONTENT;
+import static utils.Constants.CHAT;
+import static utils.Constants.NOT_FOUND;
 
 
 public class ChatService {

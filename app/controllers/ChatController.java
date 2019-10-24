@@ -14,20 +14,12 @@ import play.i18n.MessagesApi;
 import play.libs.F;
 import play.libs.concurrent.HttpExecutionContext;
 import play.libs.streams.ActorFlow;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.Results;
 import play.mvc.WebSocket;
 import services.ChatService;
 import com.typesafe.config.Config;
-import utils.DatabaseUtils;
-import utils.ServiceUtils;
-
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
-
 import static play.mvc.Results.forbidden;
-
 
 public class ChatController {
     @Inject
@@ -44,7 +36,6 @@ public class ChatController {
     ActorSystem system;
     @Inject
     private MongoDB database;
-
 
     public WebSocket socket(String roomId, String token) {
         Cluster cluster = Cluster.get(system);
