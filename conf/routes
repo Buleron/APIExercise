@@ -4,66 +4,45 @@
 # An example controller showing a sample home page
 #
 #AUTHENTICATE
-+ noJwtFilter
-+ nocsrf
-POST          /api/authenticate/ controllers.HomeController.authenticate(request: Request)
 
-+ noJwtFilter
-+ nocsrf
-GET        /api/chat/socket/:id/token    controllers.ChatController.socket(id:String,token:String)
-+ noJwtFilter
-+ nocsrf
-GET        /api/chat/:token             controllers.ChatController.tracker(token: String)
-+ noJwtFilter
-+ nocsrf
-GET           /api/chat                 controllers.ChatController.all(request: Request)
+POST          /api/authenticate/                      controllers.HomeController.authenticate(request: Request)
 
+#CHAT
+GET           /api/chat/:roomId/:token                controllers.ChatController.socket(roomId:String,token:String)
 
+GET           /api/tracker/chat/:roomId/:token        controllers.ChatController.trackerByRoom(token: String,roomId: String)
+
+GET           /api/tracker/chat/:token                controllers.ChatController.trackerAll(token: String)
 
 #DASHBOARDS
-+ noJwtFilter
-+ nocsrf
-GET           /api/dashboard/           controllers.DashboardControllers.all(request: Request)
+GET           /api/dashboard/                         controllers.DashboardControllers.all(request: Request)
 
-+ noJwtFilter
-+ nocsrf
-GET           /api/dashboard/:id        controllers.DashboardControllers.findById(id: String,request: Request)
-+ noJwtFilter
-+ nocsrf
-POST          /api/dashboard/           controllers.DashboardControllers.save(request: Request)
-+ noJwtFilter
-+ nocsrf
-PUT           /api/dashboard/           controllers.DashboardControllers.update(request: Request)
-+ noJwtFilter
-+ nocsrf
-DELETE        /api/dashboard/:id           controllers.DashboardControllers.delete(id: String,request: Request)
+GET           /api/dashboard/:id                      controllers.DashboardControllers.findById(id: String,request: Request)
+
+POST          /api/dashboard/                         controllers.DashboardControllers.save(request: Request)
+
+PUT           /api/dashboard/                         controllers.DashboardControllers.update(request: Request)
+
+DELETE        /api/dashboard/:id                      controllers.DashboardControllers.delete(id: String,request: Request)
 
 #CONTENTS
-GET           /api/content/             controllers.ContentController.all(request: Request)
-+ noJwtFilter
-+ nocsrf
-GET           /api/content/:id          controllers.ContentController.findById(id: String,request: Request)
-+ noJwtFilter
-+ nocsrf
-POST          /api/content/             controllers.ContentController.save(request: Request)
-+ noJwtFilter
-+ nocsrf
-PUT           /api/content/             controllers.ContentController.update(request: Request)
-+ noJwtFilter
-+ nocsrf
-DELETE        /api/content/:id          controllers.ContentController.delete(id: String,request: Request)
+GET           /api/content/                           controllers.ContentController.all(request: Request)
+
+GET           /api/content/:id                        controllers.ContentController.findById(id: String,request: Request)
+
+POST          /api/content/                           controllers.ContentController.save(request: Request)
+
+PUT           /api/content/                           controllers.ContentController.update(request: Request)
+
+DELETE        /api/content/:id                        controllers.ContentController.delete(id: String,request: Request)
+
 #USERS
-GET           /api/users/             controllers.UserController.allUsers(request: Request)
-+ noJwtFilter
-+ nocsrf
-GET           /api/users/:id          controllers.UserController.findById(id: String)
-+ noJwtFilter
-+ nocsrf
-POST          /api/users/             controllers.UserController.save(request: Request)
-+ noJwtFilter
-+ nocsrf
-PUT           /api/users/             controllers.UserController.update(request: Request)
-+ noJwtFilter
-+ nocsrf
-DELETE        /api/users/:id          controllers.UserController.delete(id: String)
-#USERS
+GET           /api/users/                             controllers.UserController.allUsers(request: Request)
+
+GET           /api/users/:id                          controllers.UserController.findById(id: String)
+
+POST          /api/users/                             controllers.UserController.save(request: Request)
+
+PUT           /api/users/                             controllers.UserController.update(request: Request)
+
+DELETE        /api/users/:id                          controllers.UserController.delete(id: String)

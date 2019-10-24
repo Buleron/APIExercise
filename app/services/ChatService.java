@@ -33,57 +33,27 @@ import static utils.Constants.*;
 import static utils.Constants.CONTENT;
 
 
-public class ChatService  {
+public class ChatService {
     private MongoDB mongoDB;
     private Config config;
     private ActorSystem actorSystem;
     private MessagesApi messagesApi;
 
-    public ChatService(MongoDB mongoDB, Config config,ActorSystem actorSystem,MessagesApi messagesApi) {
+    public ChatService(MongoDB mongoDB, Config config, ActorSystem actorSystem, MessagesApi messagesApi) {
         this.mongoDB = mongoDB;
         this.config = config;
         this.actorSystem = actorSystem;
         this.messagesApi = messagesApi;
     }
 
-    public CompletableFuture<List<ChatMessage>> findMyMessages(Executor context,User user) {
+    public CompletableFuture<List<ChatMessage>> findByUsersIdRoomId(String roomId, String userId, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
             MongoCollection<ChatMessage> content = mongoDB.getDatabase().getCollection(CHAT, ChatMessage.class);
 
             BasicDBObject query = new BasicDBObject();
-            query.put("userId", user.getId());
-
-            if (content.find(query).first() == null)
-                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
-
-            //List<String> access = accessService.GetAccesses(authUser);
-            return content.find(query).into(new ArrayList<>());
-        }, context);
-    }
-
-    public CompletableFuture<List<ChatMessage>> getAllMessagesByRooms(List<ObjectId> rooms, Executor executor) {
-        return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<ChatMessage> content = mongoDB.getDatabase().getCollection(CHAT, ChatMessage.class);
-
-            if (content.find().into(new ArrayList<>()) == null)
-                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
-
-            List<Bson> filters = rooms.stream().map(id -> {
-                return Filters.eq("roomId", id);
-            }).collect(Collectors.toList());
-
-//            List<String> access = accessService.GetAccesses(authUser);
-            return content.find().filter(Filters.or(filters)).into(new ArrayList<>());
-        }, executor);
-    }
-
-    public CompletableFuture<List<ChatMessage>> findByUsersIdRoomId(String roomId, String userId,Executor context) {
-        return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<ChatMessage> content = mongoDB.getDatabase().getCollection(CHAT, ChatMessage.class);
-
-            BasicDBObject query = new BasicDBObject();
-            query.put("roomId", roomId);
-            query.put("userId",userId);
+            if (!roomId.equals("all"))
+                query.put("roomId", new ObjectId(roomId));
+            query.put("userId", new ObjectId(userId));
 
             if (content.find(query).first() == null)
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
@@ -108,10 +78,10 @@ public class ChatService  {
         }, context);
     }
 
-    public  User getAuthUserFromToken(String token) {
+    public User getAuthUserFromToken(String token) {
 
-        if(token.contains("Bearer "))
-        token = token.substring(7);
+        if (token.contains("Bearer "))
+            token = token.substring(7);
 
         MongoCollection<UserToken> tokens = mongoDB.getDatabase().getCollection("tokens", UserToken.class);
         UserToken userToken = tokens.find(Filters.eq("token", token)).first();
@@ -122,12 +92,12 @@ public class ChatService  {
         }
         try {
             String userID = userToken.getUserId(token);
-            MongoCollection<User> user = mongoDB.getDatabase().getCollection("users",User.class);
+            MongoCollection<User> user = mongoDB.getDatabase().getCollection("users", User.class);
             BasicDBObject query = new BasicDBObject();
             query.put("_id", new ObjectId(userID));
             return user.find(query).first();
 
-        } catch (IllegalArgumentException|NullPointerException ex) {
+        } catch (IllegalArgumentException | NullPointerException ex) {
             ex.printStackTrace();
             // if user not found, throw unauthorized
             throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "access_forbidden"));
