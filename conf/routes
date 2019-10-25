@@ -10,10 +10,6 @@ POST          /api/authenticate/                      controllers.HomeController
 #CHAT
 GET           /api/chat/:roomId/:token                controllers.ChatController.socket(roomId:String,token:String)
 
-GET           /api/tracker/chat/:roomId/:token        controllers.ChatController.trackerByRoom(token: String,roomId: String)
-
-GET           /api/tracker/chat/:token                controllers.ChatController.trackerAll(token: String)
-
 #DASHBOARDS
 GET           /api/dashboard/                         controllers.DashboardControllers.all(request: Request)
 

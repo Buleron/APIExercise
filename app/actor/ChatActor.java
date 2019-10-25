@@ -47,6 +47,18 @@ public class ChatActor extends AbstractActor {
 
         mediator.tell(new DistributedPubSubMediator.Subscribe(roomId, getSelf()), getSelf());
         users.add(user.getId().toString());
+        initialise();
+    }
+
+    public void initialise() {
+        chatService.findByUsersIdRoomId(roomId, user.getId().toString(), context)
+                .thenCompose(CompletableFuture::completedFuture).thenCompose(ServiceUtils::toJsonNode)
+                .thenApply((myMsg) -> {
+                    out.tell(myMsg.toString(), getSelf());
+                    return myMsg;
+                }).exceptionally((error) -> {
+            return null;
+        });
     }
 
 
@@ -87,7 +99,7 @@ public class ChatActor extends AbstractActor {
             }
         }, context).thenCompose((ChatMessage) -> {
             return chatService.save(ChatMessage, context);
-        }).thenCompose((result) -> ServiceUtils.toJsonNode(result))
+        }).thenCompose(ServiceUtils::toJsonNode)
                 .thenCompose((json) -> {
                     out.tell(json.toString(), getSelf());
                     return CompletableFuture.completedFuture(json);
