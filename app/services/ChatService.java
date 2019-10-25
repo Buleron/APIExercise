@@ -1,26 +1,32 @@
 package services;
 
 import akka.actor.ActorSystem;
+import com.google.common.base.Strings;
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import com.typesafe.config.Config;
+import jwt.JwtValidator;
 import models.collection.User;
-import models.collection.UserToken;
 import models.collection.chat.ChatMessage;
 import models.exceptions.RequestException;
 import mongo.MongoDB;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import play.Logger;
 import play.i18n.MessagesApi;
 import play.mvc.Http;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-import static utils.Constants.CHAT;
-import static utils.Constants.NOT_FOUND;
+
+import static oauth2.AuthenticatedAction.getUser;
+import static utils.Constants.*;
 
 
 public class ChatService {
@@ -28,12 +34,15 @@ public class ChatService {
     private Config config;
     private ActorSystem actorSystem;
     private MessagesApi messagesApi;
+    private JwtValidator jwtValidator;
 
-    public ChatService(MongoDB mongoDB, Config config, ActorSystem actorSystem, MessagesApi messagesApi) {
+
+    public ChatService(MongoDB mongoDB, Config config, ActorSystem actorSystem, MessagesApi messagesApi, JwtValidator jwtValidator) {
         this.mongoDB = mongoDB;
         this.config = config;
         this.actorSystem = actorSystem;
         this.messagesApi = messagesApi;
+        this.jwtValidator = jwtValidator;
     }
 
     public CompletableFuture<List<ChatMessage>> findByUsersIdRoomId(String roomId, String userId, Executor context) {
@@ -53,12 +62,43 @@ public class ChatService {
         }, context);
     }
 
+    public CompletableFuture<List<ChatMessage>> findByUsersIdRoomIdPagination(String roomId, String userId, String search, int limit, int skip, String until, Executor context) {
+
+        return CompletableFuture.supplyAsync(() -> {
+
+            List<ChatMessage> items = new ArrayList<>();
+            MongoCollection<ChatMessage> collection = mongoDB.getDatabase().getCollection(CHAT, ChatMessage.class);
+            FindIterable<ChatMessage> list = collection.find();
+
+            List<Bson> filters = new ArrayList<>();
+            if (!Strings.isNullOrEmpty(until))
+                filters.add(Filters.lte("_id", new ObjectId(until)));
+
+            if (!Strings.isNullOrEmpty(roomId))
+                filters.add(Filters.eq("roomId", new ObjectId(roomId)));
+
+            if (!Strings.isNullOrEmpty(userId))
+                filters.add(Filters.eq("userId", new ObjectId(userId)));
+
+            if (!Strings.isNullOrEmpty(search))
+                filters.add(new Document("$text", new Document("$search", search)));
+
+            if (filters.size() > 0)
+                list = list.filter(Filters.and(filters));
+
+            if (Integer.toString(skip).isEmpty())
+                list.limit(limit).sort(Sorts.ascending("_id")).into(items);
+            list.limit(limit).skip(skip).sort(Sorts.ascending("_id")).into(items);
+
+            return items;
+        }, context);
+    }
+
     public CompletableFuture<ChatMessage> save(ChatMessage chatMessage, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 MongoCollection<ChatMessage> message = mongoDB.getDatabase().getCollection(CHAT, ChatMessage.class);
                 chatMessage.setId(new ObjectId());
-                Logger.debug("Chat message: {}", chatMessage.toString());
                 message.insertOne(chatMessage);
                 return chatMessage;
             } catch (Exception ex) {
@@ -69,29 +109,7 @@ public class ChatService {
     }
 
     public User getAuthUserFromToken(String token) {
-
-        if (token.contains("Bearer "))
-            token = token.substring(7);
-
-        MongoCollection<UserToken> tokens = mongoDB.getDatabase().getCollection("tokens", UserToken.class);
-        UserToken userToken = tokens.find(Filters.eq("token", token)).first();
-
-        // if token is missing at mongo, throw unathorized
-        if (userToken == null) {
-            throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "access_forbidden"));
-        }
-        try {
-            String userID = userToken.getUserId(token);
-            MongoCollection<User> user = mongoDB.getDatabase().getCollection("users", User.class);
-            BasicDBObject query = new BasicDBObject();
-            query.put("_id", new ObjectId(userID));
-            return user.find(query).first();
-
-        } catch (IllegalArgumentException | NullPointerException ex) {
-            ex.printStackTrace();
-            // if user not found, throw unauthorized
-            throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "access_forbidden"));
-        }
+        return getUser(token, jwtValidator, mongoDB);
     }
 
 }

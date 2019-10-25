@@ -4,21 +4,21 @@ import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import jwt.JwtValidator;
+import jwt.VerifiedJwt;
 import models.collection.User;
 import models.collection.UserToken;
 import models.exceptions.RequestException;
 import mongo.MongoDB;
-import org.bson.Document;
 import org.bson.types.ObjectId;
-import play.Logger;
 import play.i18n.MessagesApi;
+import play.libs.F;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
-import utils.Constants;
 import utils.DatabaseUtils;
-
+import static utils.Constants.*;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -27,61 +27,64 @@ import java.util.concurrent.CompletionStage;
 /**
  * Created by Agon on 11/29/2016.
  */
-public class AuthenticatedAction extends Action<Authenticated>  {
-	@Inject
-	MongoDB mongoDB;
-	@Inject
-	MessagesApi messagesApi;
+public class AuthenticatedAction extends Action<Authenticated> {
+    @Inject
+    MongoDB mongoDB;
+    @Inject
+    MessagesApi messagesApi;
 
-	@javax.inject.Inject
-	HttpExecutionContext context;
+    @javax.inject.Inject
+    HttpExecutionContext context;
+    private JwtValidator jwtValidator;
 
-	@Override
-	public CompletionStage<Result> call(Http.Request req) {
+    @javax.inject.Inject
+    public AuthenticatedAction(JwtValidator jwtValidator) {
+        this.jwtValidator = jwtValidator;
+    }
 
-		return CompletableFuture.supplyAsync(() -> {
-			// request extract headers on Authentitcation
-			Optional<String> authorization = req.getHeaders().get("Authorization");
 
-			// there you should find a token
-			// if token is missing at headers, throw unathorized
-			if (!authorization.isPresent()) {
-				throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "access_forbidden"));
-			}
-			// Bearer if token is not bearer type throw out
-			String token = authorization.get();
-			if(!token.contains("Bearer ")){
-				throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "No bearer token type"));
-			}
-			//remove Bearer; and check if exists into mongodb
-			MongoCollection<UserToken> tokens = mongoDB.getDatabase().getCollection("tokens", UserToken.class);
-			UserToken userToken = tokens.find(Filters.eq("token", token.substring(7))).first();
+    @Override
+    public CompletionStage<Result> call(Http.Request req) {
 
-			// if token is missing at mongo, throw unathorized
-			if (userToken == null) {
-				throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "access_forbidden"));
-			}
-			try {
-				// if token exists, find the user for that token
-				// if user found, put it into attributes at request
-				String userID = userToken.getUserId(token.substring(7));
-				MongoCollection<User> usr = mongoDB.getDatabase().getCollection("users",User.class);
-				BasicDBObject query = new BasicDBObject();
-				query.put("_id", new ObjectId(userID));
-				User res = usr.find(query).first();
-				return res;
-			} catch (IllegalArgumentException|NullPointerException ex) {
-				ex.printStackTrace();
-				// if user not found, throw unathorized
-				throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, "access_forbidden"));
-			}
-		}, context.current()).thenCompose((user) -> {
-			// Put a User object into the request
-			Http.Request newReq = req.addAttr(PlatformAttributes.AUTHENTICATED_USER, user);
-			return	delegate.call(newReq);
-		}).exceptionally((exception) -> {
-			exception.printStackTrace();
-			return DatabaseUtils.resultFromThrowable(exception, messagesApi);
-		});
-	}
+        return CompletableFuture.supplyAsync(() -> {
+
+            Optional<String> authorization = req.getHeaders().get(AUTHORIZATION);
+
+            if (!authorization.filter(ah -> ah.contains(BEARER)).isPresent())
+                throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, NO_BEARER));
+
+            String token = authorization.map(ah -> ah.replace(BEARER, "")).orElse("");
+            return getUser(token, jwtValidator, mongoDB);
+        }, context.current()).thenCompose((user) -> {
+            Http.Request newReq = req.addAttr(PlatformAttributes.AUTHENTICATED_USER, user);
+            return delegate.call(newReq);
+        }).exceptionally((exception) -> {
+            exception.printStackTrace();
+            return DatabaseUtils.resultFromThrowable(exception, messagesApi);
+        });
+    }
+
+    public static User getUser(String token, JwtValidator jwtValidator, MongoDB mongoDB) {
+        F.Either<JwtValidator.Error, VerifiedJwt> response = jwtValidator.verify(token);
+
+        if (response.left.isPresent())
+            throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, WRONG_TOKEN));
+
+        MongoCollection<UserToken> tokens = mongoDB.getDatabase().getCollection(TOKEN_COLLECTION, UserToken.class);
+        UserToken userToken = tokens.find(Filters.eq("token", token)).first();
+
+        if (userToken == null)
+            throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, ACCESS_FORBIDDEN));
+
+        try {
+            String userID = userToken.getUserId(token);
+            MongoCollection<User> usr = mongoDB.getDatabase().getCollection(USERS, User.class);
+            BasicDBObject query = new BasicDBObject();
+            query.put("_id", new ObjectId(userID));
+            return usr.find(query).first();
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            ex.printStackTrace();
+            throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, ACCESS_FORBIDDEN));
+        }
+    }
 }
