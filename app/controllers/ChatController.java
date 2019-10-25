@@ -7,6 +7,7 @@ import akka.stream.Materializer;
 import jwt.JwtValidator;
 import models.collection.User;
 import mongo.MongoDB;
+import oauth2.Authenticated;
 import oauth2.PlatformAttributes;
 import play.i18n.MessagesApi;
 import play.libs.F;
@@ -58,11 +59,11 @@ public class ChatController {
             );
         });
     }
-
-    public CompletableFuture<Result> findById(String roomId, String search, int limit, int skip, String until, Http.Request request) {
+    @Authenticated()
+    public CompletableFuture<Result> sortMessages(Http.Request request, String roomId, String search, int limit, int skip, String until) {
         User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return CompletableFuture.supplyAsync(() -> new ChatService(database, config, actorSystem, messagesApi, jwtValidator)
-                .findByUsersIdRoomIdPagination(roomId,authUser.getId().toString(),search ,limit,skip,until,ec.current()))
+                .findByUsersIdRoomIdPagination(ec.current(), roomId,authUser.getId().toString(), search , limit, skip, until))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));

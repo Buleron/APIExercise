@@ -44,7 +44,7 @@ import static play.mvc.Results.forbidden;
 public class JwtFilter extends Filter {
     private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
-    private static final String ROUTE_MODIFIER_NO_JWT_FILTER_TAG = "noJwtFilter";
+    private static final String ROUTE_MODIFIER_NO_JWT_FILTER_TAG = "paKontroll";
     private static final String ERR_AUTHORIZATION_HEADER = "ERR_AUTHORIZATION_HEADER";
     private JwtValidator jwtValidator;
 

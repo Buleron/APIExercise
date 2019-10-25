@@ -62,8 +62,7 @@ public class ChatService {
         }, context);
     }
 
-    public CompletableFuture<List<ChatMessage>> findByUsersIdRoomIdPagination(String roomId, String userId, String search, int limit, int skip, String until, Executor context) {
-
+    public CompletableFuture<List<ChatMessage>> findByUsersIdRoomIdPagination(Executor context, String roomId, String userId, String search, int limit, int skip, String until) {
         return CompletableFuture.supplyAsync(() -> {
 
             List<ChatMessage> items = new ArrayList<>();
@@ -86,9 +85,7 @@ public class ChatService {
             if (filters.size() > 0)
                 list = list.filter(Filters.and(filters));
 
-            if (Integer.toString(skip).isEmpty())
-                list.limit(limit).sort(Sorts.ascending("_id")).into(items);
-            list.limit(limit).skip(skip).sort(Sorts.ascending("_id")).into(items);
+            list.limit(limit).sort(Sorts.ascending("_id")).into(items);
 
             return items;
         }, context);
