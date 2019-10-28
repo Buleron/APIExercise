@@ -54,9 +54,9 @@ public class ChatController {
             );
         });
     }
-    @Authenticated()
-    public CompletableFuture<Result> sortMessages(Http.Request request, String roomId, String search, int limit, int skip, String until) {
-        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+
+    public CompletableFuture<Result> sortMessages(Http.RequestHeader reqHeader, String roomId, String search, int limit, int skip, String until) {
+        User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return CompletableFuture.supplyAsync(() -> new ChatService(database, jwtValidator)
                 .findByUsersIdRoomIdPagination(ec.current(), roomId,authUser.getId().toString(), search , limit, skip, until))
                 .thenCompose(ServiceUtils::toJsonNode)

@@ -20,7 +20,6 @@ import utils.ServiceUtils;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
-//@Authenticated()
 public class DashboardControllers {
 
     @Inject
