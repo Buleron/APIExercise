@@ -17,7 +17,6 @@ import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
 public class ContentController {
-
     @Inject
     MongoDB mongoDB;
     @Inject

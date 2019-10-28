@@ -20,7 +20,6 @@ import java.util.concurrent.CompletableFuture;
  */
 public class HomeController extends Controller {
 
-
     @Inject
     MongoDB mongoDB;
     @Inject

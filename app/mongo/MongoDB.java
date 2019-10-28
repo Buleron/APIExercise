@@ -1,13 +1,10 @@
 package mongo;
 
-import akka.cluster.Cluster;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import lombok.Data;
 import lombok.Getter;
 import models.collection.chat.ChatMessage;
 import org.bson.codecs.configuration.CodecProvider;
@@ -15,14 +12,8 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.ClassModel;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import play.api.inject.ApplicationLifecycle;
-import scala.Function0;
-import scala.concurrent.Future;
-
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import static org.bson.codecs.pojo.Conventions.ANNOTATION_CONVENTION;
@@ -59,7 +50,7 @@ public class MongoDB {
                 PojoCodecProvider.builder()
                         .conventions(Arrays.asList(ANNOTATION_CONVENTION))
                         .register("models")
-        // and also register class model if codec error;
+                        // and also register class model if codec error;
                         .register(chatMessage)
                         .automatic(true).build();
 

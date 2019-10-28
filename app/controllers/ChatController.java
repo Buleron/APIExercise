@@ -7,7 +7,6 @@ import akka.stream.Materializer;
 import jwt.JwtValidator;
 import models.collection.User;
 import mongo.MongoDB;
-import oauth2.Authenticated;
 import oauth2.PlatformAttributes;
 import play.i18n.MessagesApi;
 import play.libs.F;
@@ -20,7 +19,6 @@ import play.mvc.WebSocket;
 import services.ChatService;
 import utils.DatabaseUtils;
 import utils.ServiceUtils;
-
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 import static play.mvc.Results.forbidden;

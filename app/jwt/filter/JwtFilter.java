@@ -24,26 +24,23 @@
 
 package jwt.filter;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
-import javax.inject.Inject;
-
 import akka.stream.Materializer;
 import jwt.JwtValidator;
-import jwt.VerifiedJwt;
-import models.collection.User;
 import mongo.MongoDB;
 import oauth2.PlatformAttributes;
 import play.Logger;
-import play.libs.F;
 import play.libs.concurrent.HttpExecutionContext;
-import play.mvc.*;
+import play.mvc.Filter;
+import play.mvc.Http;
+import play.mvc.Result;
 import play.routing.HandlerDef;
 import play.routing.Router;
+import javax.inject.Inject;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 
 import static oauth2.AuthenticatedAction.getUser;
 import static play.mvc.Results.forbidden;
