@@ -24,9 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
-/**
- * Created by Agon on 11/29/2016.
- */
+
 public class AuthenticatedAction extends Action<Authenticated> {
     @Inject
     MongoDB mongoDB;

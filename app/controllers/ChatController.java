@@ -18,7 +18,6 @@ import play.mvc.Result;
 import play.mvc.Results;
 import play.mvc.WebSocket;
 import services.ChatService;
-import com.typesafe.config.Config;
 import utils.DatabaseUtils;
 import utils.ServiceUtils;
 
@@ -29,10 +28,6 @@ import static play.mvc.Results.forbidden;
 public class ChatController {
     @Inject
     HttpExecutionContext ec;
-    @Inject
-    ActorSystem actorSystem;
-    @Inject
-    Config config;
     @Inject
     Materializer materializer;
     @Inject
@@ -46,7 +41,7 @@ public class ChatController {
 
     public WebSocket socket(String roomId, String token) {
         Cluster cluster = Cluster.get(system);
-        ChatService chatService = new ChatService(database, config, actorSystem, messagesApi, jwtValidator);
+        ChatService chatService = new ChatService(database, jwtValidator);
         User authUser = chatService.getAuthUserFromToken(token);
         return WebSocket.Text.acceptOrResult((requests) -> {
             if (authUser == null)
@@ -62,7 +57,7 @@ public class ChatController {
     @Authenticated()
     public CompletableFuture<Result> sortMessages(Http.Request request, String roomId, String search, int limit, int skip, String until) {
         User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> new ChatService(database, config, actorSystem, messagesApi, jwtValidator)
+        return CompletableFuture.supplyAsync(() -> new ChatService(database, jwtValidator)
                 .findByUsersIdRoomIdPagination(ec.current(), roomId,authUser.getId().toString(), search , limit, skip, until))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)

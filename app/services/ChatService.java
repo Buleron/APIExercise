@@ -16,32 +16,22 @@ import mongo.MongoDB;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import play.i18n.MessagesApi;
 import play.mvc.Http;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-
 import static oauth2.AuthenticatedAction.getUser;
 import static utils.Constants.*;
 
-
 public class ChatService {
     private MongoDB mongoDB;
-    private Config config;
-    private ActorSystem actorSystem;
-    private MessagesApi messagesApi;
     private JwtValidator jwtValidator;
 
 
-    public ChatService(MongoDB mongoDB, Config config, ActorSystem actorSystem, MessagesApi messagesApi, JwtValidator jwtValidator) {
+    public ChatService(MongoDB mongoDB, JwtValidator jwtValidator) {
         this.mongoDB = mongoDB;
-        this.config = config;
-        this.actorSystem = actorSystem;
-        this.messagesApi = messagesApi;
         this.jwtValidator = jwtValidator;
     }
 
@@ -85,7 +75,7 @@ public class ChatService {
             if (filters.size() > 0)
                 list = list.filter(Filters.and(filters));
 
-            list.limit(limit).sort(Sorts.ascending("_id")).into(items);
+            list.limit(limit).skip(skip).sort(Sorts.ascending("_id")).into(items);
 
             return items;
         }, context);
