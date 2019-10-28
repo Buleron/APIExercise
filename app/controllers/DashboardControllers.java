@@ -1,5 +1,6 @@
 package controllers;
 
+import jwt.VerifiedJwt;
 import models.collection.Dashboard;
 import models.collection.User;
 import mongo.MongoDB;
@@ -19,7 +20,7 @@ import utils.ServiceUtils;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
-@Authenticated()
+//@Authenticated()
 public class DashboardControllers {
 
     @Inject
@@ -31,16 +32,17 @@ public class DashboardControllers {
     HttpExecutionContext
             context;
 
-    public CompletableFuture<Result> all(Http.Request request) {
-        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+    public CompletableFuture<Result> all(Http.RequestHeader reqHeader) {
+         //To get token use VerifiedJwt token = reqHeader.attrs().get(PlatformAttributes.VERIFIED_JWT);
+        User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).all(context.current(), authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    public CompletableFuture<Result> findById(String id,Http.Request request) {
-        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+    public CompletableFuture<Result> findById(String id,Http.RequestHeader reqHeader) {
+        User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).findById(id, context.current(),authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
@@ -48,8 +50,8 @@ public class DashboardControllers {
     }
 
     @BodyParser.Of(BodyParser.Json.class)
-    public CompletableFuture<Result> save(Http.Request request) {
-        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+    public CompletableFuture<Result> save(Http.RequestHeader reqHeader) {
+        User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return ServiceUtils.parseBodyOfType(context.current(), Dashboard.class)
                 .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).save(item, context.current(),authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
@@ -57,8 +59,8 @@ public class DashboardControllers {
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    public CompletableFuture<Result> update(Http.Request request) {
-        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+    public CompletableFuture<Result> update(Http.RequestHeader reqHeader) {
+        User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return ServiceUtils.parseBodyOfType(context.current(), Dashboard.class)
                 .thenCompose((item) -> new DashboardService(mongoDB.getDatabase()).update(item, context.current(),authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
@@ -66,8 +68,8 @@ public class DashboardControllers {
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    public CompletableFuture<Result> delete(String id,Http.Request request) {
-        User authUser = request.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
+    public CompletableFuture<Result> delete(String id,Http.RequestHeader reqHeader) {
+        User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return CompletableFuture.supplyAsync(() -> new DashboardService(mongoDB.getDatabase()).delete(id, context.current(),authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
