@@ -26,15 +26,20 @@ package jwt.filter;
 
 import akka.stream.Materializer;
 import jwt.JwtValidator;
+import models.collection.User;
+import models.exceptions.RequestException;
 import mongo.MongoDB;
 import oauth2.PlatformAttributes;
 import play.Logger;
+import play.i18n.MessagesApi;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Filter;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.routing.HandlerDef;
 import play.routing.Router;
+import utils.DatabaseUtils;
+
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +49,7 @@ import java.util.function.Function;
 
 import static oauth2.AuthenticatedAction.getUser;
 import static play.mvc.Results.forbidden;
+import static utils.Constants.WRONG_TOKEN;
 
 
 public class JwtFilter extends Filter {
@@ -57,6 +63,8 @@ public class JwtFilter extends Filter {
     MongoDB mongoDB;
     @javax.inject.Inject
     HttpExecutionContext context;
+    @com.google.inject.Inject
+    MessagesApi messagesApi;
 
     @Inject
     public JwtFilter(Materializer mat, JwtValidator jwtValidator) {
@@ -81,14 +89,17 @@ public class JwtFilter extends Filter {
             Logger.of("f=JwtFilter, error=authHeaderNotPresent");
             return CompletableFuture.completedFuture(forbidden(ERR_AUTHORIZATION_HEADER));
         }
-
         String token = authHeader.map(ah -> ah.replace(BEARER, "")).orElse("");
 
-        return CompletableFuture.supplyAsync(() -> getUser(token, jwtValidator, mongoDB), context.current()).thenCompose((user) -> {
-            Http.RequestHeader authUser = requestHeader.addAttr(PlatformAttributes.AUTHENTICATED_USER, user);
-            Http.RequestHeader reqHeader = authUser.withAttrs(authUser.attrs().put(PlatformAttributes.VERIFIED_JWT, token));
-            return nextFilter.apply(reqHeader);
-        });
-
+        return CompletableFuture.supplyAsync(() ->
+                getUser(token, jwtValidator, mongoDB), context.current())
+                .thenCompose((user) -> {
+                    Http.RequestHeader authUser = requestHeader.addAttr(PlatformAttributes.AUTHENTICATED_USER, user);
+                    Http.RequestHeader reqHeader = authUser.withAttrs(authUser.attrs().put(PlatformAttributes.VERIFIED_JWT, token));
+                    return nextFilter.apply(reqHeader);
+                }).exceptionally((exception) -> {
+                    exception.printStackTrace();
+                    return DatabaseUtils.resultFromThrowable(exception, messagesApi);
+                });
     }
 }

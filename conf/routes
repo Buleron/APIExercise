@@ -10,29 +10,29 @@ GET        /api/chat/                      controllers.ChatController.sortMessag
 GET        /api/dashboard/                 controllers.DashboardControllers.all(request: Request)
 
 GET        /api/dashboard/:id              controllers.DashboardControllers.findById(id: String,request: Request)
-
++ nocsrf
 POST        /api/dashboard/                controllers.DashboardControllers.save(request: Request)
-
++ nocsrf
 PUT        /api/dashboard/                 controllers.DashboardControllers.update(request: Request)
-
++ nocsrf
 DELETE        /api/dashboard/:id           controllers.DashboardControllers.delete(id: String,request: Request)
 
 GET        /api/content/                   controllers.ContentController.all(request: Request)
 
 GET        /api/content/:id                controllers.ContentController.findById(id: String,request: Request)
-
++ nocsrf
 POST        /api/content/                  controllers.ContentController.save(request: Request)
-
++ nocsrf
 PUT        /api/content/                   controllers.ContentController.update(request: Request)
-
++ nocsrf
 DELETE        /api/content/:id             controllers.ContentController.delete(id: String,request: Request)
 
 GET        /api/users/                     controllers.UserController.allUsers(request: Request)
 
 GET        /api/users/:id                  controllers.UserController.findById(id: String)
-
++ nocsrf
 POST        /api/users/                    controllers.UserController.save(request: Request)
-
++ nocsrf
 PUT        /api/users/                     controllers.UserController.update(request: Request)
-
++ nocsrf
 DELETE        /api/users/:id               controllers.UserController.delete(id: String)
