@@ -50,6 +50,7 @@ public class DashboardControllerTest extends WithApplication {
     public void TestsAll() throws IOException {
         Dashboard dashboard;
         boolean passed;
+        //todo Create
         passed = createDashboard_MissingToken();
         if (!passed) return;
         passed = createDashboard_BadRequest();
@@ -58,9 +59,10 @@ public class DashboardControllerTest extends WithApplication {
         if (!passed) return;
         dashboard = createDashboard_OK();
         if (dashboard.getId().toString().isEmpty()) {
-            System.out.println("Something went wrong while executing tests");
+            System.out.println("dashboard isn't created");
             return;
         }
+        //todo Update
         passed = updateDashboard_BadRequest();
         if (!passed) return;
         passed = updateDashboard_WrongToken();
@@ -68,37 +70,44 @@ public class DashboardControllerTest extends WithApplication {
         passed = updateDashboard_OK(dashboard);
         if (!passed) return;
 
-
+        //todo getById
         passed = getDashboardById_BadRequest();
         if (!passed) return;
         passed = getDashboardById_WrongToken();
-        if(!passed) return;
+        if (!passed) return;
         passed = getDashboardById_OK(dashboard.getId().toString());
-        if(!passed) return;
+        if (!passed) return;
 
-        passed = dashboardGetAll();
-        if(!passed) return;
+        //todo getAll
+        passed = dashboardGetAll_BadRequest();
+        if (!passed) return;
+        passed = dashboardGetAll_OK();
+        if (!passed) return;
+        passed = dashboardGetAll_WrongToken();
+        if (!passed) return;
+        passed = dashboardGetAll_NoToken();
+        if (!passed) return;
 
+        //todo Delete
         passed = deleteDashboard_BadRequest();
-        if(!passed) return;
+        if (!passed) return;
         passed = deleteDashboard_WrongToken();
-        if(!passed) return;
+        if (!passed) return;
         passed = deleteDashboard_NoToken();
-        if(!passed) return;
+        if (!passed) return;
         passed = deleteDashboard_NotFound();
-        if(!passed) return;
+        if (!passed) return;
         passed = deleteDashboard_OK(dashboard.getId().toString());
-        if(!passed) return;
-
+        if (!passed) return;
+        assertTrue(true);
         System.out.println(dashboard);
-        assertTrue(passed);
-        System.out.println("Successfully with create dashboard");
+        System.out.println("Successfully with dashboard CRUD");
     }
 
     private Dashboard createDashboard_OK() throws IOException {
         ObjectNode dataNode = Json.newObject();
-        dataNode.put("name", "asasdasdd");
-        dataNode.put("description", "asdasdasdasd");
+        dataNode.put("name", "createName from tests");
+        dataNode.put("description", "description created from tests");
         dataNode.put("parentId", "5dada6f7ee5cd920804cdb31");
         Http.RequestBuilder request = new Http.RequestBuilder()
                 .method(POST)
@@ -156,6 +165,7 @@ public class DashboardControllerTest extends WithApplication {
         return result.status() == UNAUTHORIZED;
     }
 
+
     private boolean updateDashboard_BadRequest() {
         Http.RequestBuilder request = new Http.RequestBuilder()
                 .method(PUT)
@@ -203,6 +213,7 @@ public class DashboardControllerTest extends WithApplication {
         return result.status() == OK;
     }
 
+
     private boolean getDashboardById_BadRequest() {
         Http.RequestBuilder request = new Http.RequestBuilder()
                 .method(GET)
@@ -241,7 +252,8 @@ public class DashboardControllerTest extends WithApplication {
         return result.status() == OK;
     }
 
-    private boolean dashboardGetAll() {
+
+    private boolean dashboardGetAll_OK() {
         ObjectNode dataNode = Json.newObject();
         Http.RequestBuilder request = new Http.RequestBuilder()
                 .method(GET)
@@ -256,6 +268,47 @@ public class DashboardControllerTest extends WithApplication {
         assertEquals(OK, result.status());
         return result.status() == OK;
     }
+
+    private boolean dashboardGetAll_BadRequest() {
+
+        Http.RequestBuilder request = new Http.RequestBuilder()
+                .method(GET)
+                .header("Content-Type", "application/json")
+                .header(AUTHORIZATION, BEARER_Token)
+                .uri(AuthURL);
+
+        Result result = route(app, request);
+        assertEquals(BAD_REQUEST, result.status());
+        return result.status() == BAD_REQUEST;
+    }
+
+    private boolean dashboardGetAll_WrongToken() {
+        ObjectNode dataNode = Json.newObject();
+        Http.RequestBuilder request = new Http.RequestBuilder()
+                .method(GET)
+                .header("Content-Type", "application/json")
+                .bodyJson(dataNode)
+                .header(AUTHORIZATION, BEARER + WrongToken)
+                .uri(AuthURL);
+
+        Result result = route(app, request);
+        assertEquals(UNAUTHORIZED, result.status());
+        return result.status() == UNAUTHORIZED;
+    }
+
+    private boolean dashboardGetAll_NoToken() {
+        ObjectNode dataNode = Json.newObject();
+        Http.RequestBuilder request = new Http.RequestBuilder()
+                .method(GET)
+                .header("Content-Type", "application/json")
+                .bodyJson(dataNode)
+                .uri(AuthURL);
+
+        Result result = route(app, request);
+        assertEquals(FORBIDDEN, result.status());
+        return result.status() == FORBIDDEN;
+    }
+
 
     private boolean deleteDashboard_BadRequest() {
         ObjectNode dataNode = Json.newObject();
