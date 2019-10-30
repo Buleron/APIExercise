@@ -38,6 +38,7 @@ public class DashboardControllerTest extends WithApplication {
         return new GuiceApplicationBuilder().build();
     }
 
+    //also check for role cases;
     public static ObjectNode objectNodeWithPublicWriteAccess() {
         ObjectNode dataNode = Json.newObject();
         ArrayNode writeACL = Json.newArray();
@@ -49,56 +50,56 @@ public class DashboardControllerTest extends WithApplication {
     @Test
     public void TestsAll() throws IOException {
         Dashboard dashboard;
-        boolean passed;
         //todo Create
-        passed = createDashboard_MissingToken();
-        if (!passed) return;
-        passed = createDashboard_BadRequest();
-        if (!passed) return;
-        passed = createDashboard_WrongToken();
-        if (!passed) return;
+        if (!createDashboard_MissingToken()) return;
+
+        if (!createDashboard_BadRequest()) return;
+
+        if (!createDashboard_WrongToken()) return;
+
         dashboard = createDashboard_OK();
         if (dashboard.getId().toString().isEmpty()) {
             System.out.println("dashboard isn't created");
             return;
         }
         //todo Update
-        passed = updateDashboard_BadRequest();
-        if (!passed) return;
-        passed = updateDashboard_WrongToken();
-        if (!passed) return;
-        passed = updateDashboard_OK(dashboard);
-        if (!passed) return;
+        if (!updateDashboard_BadRequest()) return;
+
+        if (!updateDashboard_WrongToken()) return;
+
+        if (!updateDashboard_OK(dashboard)) return;
+
+        if (!updateDashboard_MissingToken()) return;
 
         //todo getById
-        passed = getDashboardById_BadRequest();
-        if (!passed) return;
-        passed = getDashboardById_WrongToken();
-        if (!passed) return;
-        passed = getDashboardById_OK(dashboard.getId().toString());
-        if (!passed) return;
+        if (!getDashboardById_BadRequest()) return;
+
+        if (!getDashboardById_WrongToken()) return;
+
+        if (!getDashboardById_MissingToken()) return;
+
+        if (!getDashboardById_OK(dashboard.getId().toString())) return;
 
         //todo getAll
-        passed = dashboardGetAll_BadRequest();
-        if (!passed) return;
-        passed = dashboardGetAll_OK();
-        if (!passed) return;
-        passed = dashboardGetAll_WrongToken();
-        if (!passed) return;
-        passed = dashboardGetAll_NoToken();
-        if (!passed) return;
+        if (!dashboardGetAll_BadRequest()) return;
+
+        if (!dashboardGetAll_OK()) return;
+
+        if (!dashboardGetAll_WrongToken()) return;
+
+        if (!dashboardGetAll_MissingToken()) return;
 
         //todo Delete
-        passed = deleteDashboard_BadRequest();
-        if (!passed) return;
-        passed = deleteDashboard_WrongToken();
-        if (!passed) return;
-        passed = deleteDashboard_NoToken();
-        if (!passed) return;
-        passed = deleteDashboard_NotFound();
-        if (!passed) return;
-        passed = deleteDashboard_OK(dashboard.getId().toString());
-        if (!passed) return;
+        if (!deleteDashboard_BadRequest()) return;
+
+        if (!deleteDashboard_WrongToken()) return;
+
+        if (!deleteDashboard_MissingToken()) return;
+
+        if (!deleteDashboard_NotFound()) return;
+
+        if (!deleteDashboard_OK(dashboard.getId().toString())) return;
+
         assertTrue(true);
         System.out.println(dashboard);
         System.out.println("Successfully with dashboard CRUD");
@@ -194,6 +195,22 @@ public class DashboardControllerTest extends WithApplication {
         return result.status() == UNAUTHORIZED;
     }
 
+    private boolean updateDashboard_MissingToken() {
+        ObjectNode dataNode = Json.newObject();
+        dataNode.put("name", "UPDATED FROM TEST");
+        dataNode.put("description", "UPDATED From tests yeap updated again");
+        dataNode.put("parentId", "5dada6f7ee5cd920804cdb31");
+        dataNode.put("_id", "5dada6f7ee5cd920804cdb31");
+        Http.RequestBuilder request = new Http.RequestBuilder()
+                .method(PUT)
+                .header("Content-Type", "application/json")
+                .bodyJson(dataNode)
+                .uri(AuthURL);
+        Result result = route(app, request);
+        assertEquals(UNAUTHORIZED, result.status());
+        return result.status() == UNAUTHORIZED;
+    }
+
     private boolean updateDashboard_OK(Dashboard dashboard) {
         ObjectNode dataNode = Json.newObject();
         dataNode.put("name", dashboard.getName() + " updated");
@@ -230,6 +247,18 @@ public class DashboardControllerTest extends WithApplication {
                 .method(GET)
                 .header("Content-Type", "application/json")
                 .header(AUTHORIZATION, BEARER + WrongToken)
+                .bodyJson(dataNode)
+                .uri(AuthURL + "5dada6f7ee5cd920804cdb31");
+        Result result = route(app, request);
+        assertEquals(UNAUTHORIZED, result.status());
+        return result.status() == UNAUTHORIZED;
+    }
+
+    private boolean getDashboardById_MissingToken() {
+        ObjectNode dataNode = Json.newObject();
+        Http.RequestBuilder request = new Http.RequestBuilder()
+                .method(GET)
+                .header("Content-Type", "application/json")
                 .bodyJson(dataNode)
                 .uri(AuthURL + "5dada6f7ee5cd920804cdb31");
         Result result = route(app, request);
@@ -296,7 +325,7 @@ public class DashboardControllerTest extends WithApplication {
         return result.status() == UNAUTHORIZED;
     }
 
-    private boolean dashboardGetAll_NoToken() {
+    private boolean dashboardGetAll_MissingToken() {
         ObjectNode dataNode = Json.newObject();
         Http.RequestBuilder request = new Http.RequestBuilder()
                 .method(GET)
@@ -336,7 +365,7 @@ public class DashboardControllerTest extends WithApplication {
         return result.status() == FORBIDDEN;
     }
 
-    private boolean deleteDashboard_NoToken() {
+    private boolean deleteDashboard_MissingToken() {
         ObjectNode dataNode = Json.newObject();
         dataNode.put("_id", "5dada734ee5cd920804cdb32");
         Http.RequestBuilder request = new Http.RequestBuilder()
