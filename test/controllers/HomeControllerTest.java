@@ -23,15 +23,6 @@ public class HomeControllerTest extends WithApplication {
         return new GuiceApplicationBuilder().build();
     }
 
-
-    public static ObjectNode objectNodeWithPublicWriteAccess() {
-        ObjectNode dataNode = Json.newObject();
-        ArrayNode writeACL = Json.newArray();
-        writeACL.add("*");
-        dataNode.set("writeACL", writeACL);
-        return dataNode;
-    }
-
     @Test
     public void authenticateSuccessfully() {
         ObjectNode dataNode = Json.newObject();
@@ -42,7 +33,7 @@ public class HomeControllerTest extends WithApplication {
                 .bodyJson(dataNode)
                 .uri(AuthURL);
         Result result = route(app, request);
-        String token = getTokenFromResult(result);
+        String token = Helper.getToken(result);
         System.out.println(token);
         assertEquals(OK, result.status());
     }
@@ -60,14 +51,6 @@ public class HomeControllerTest extends WithApplication {
         assertEquals(UNAUTHORIZED, result.status());
     }
 
-    public static String getTokenFromResult(Result result) {
-        String resultStr = play.test.Helpers.contentAsString(result);
-        ObjectNode json = (ObjectNode) Json.parse(resultStr);
-        System.out.println("RESPONSE: " + json.toString());
-        String token = json.get("token").asText();
-        return token;
-
-    }
 
     public String getAnyToken() {
         ObjectNode dataNode = Json.newObject();
@@ -78,7 +61,7 @@ public class HomeControllerTest extends WithApplication {
                 .bodyJson(dataNode)
                 .uri(AuthURL);
         Result result = route(app, request);
-        String token = getTokenFromResult(result);
+        String token = Helper.getToken(result);
         System.out.println(token);
         assertEquals(OK, result.status());
         return token;
