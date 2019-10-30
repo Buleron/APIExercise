@@ -7,16 +7,53 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.util.JSON;
+import mongo.MongoDB;
 import org.bson.Document;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import play.Application;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
+import play.test.Helpers;
+import play.twirl.api.Content;
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
+import static play.mvc.Http.Status.OK;
+import static play.test.Helpers.POST;
+import static play.test.Helpers.route;
+import static utils.Constants.BEARER;
 
 public class Helper {
 
     private static String URL = "http://localhost:1900/api";
+
+    public static ObjectNode contentBuilder() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        String dataContent = "{\n" +
+                "  \"dashboardId\": \"5db83bf08f1ed921046a6dee\",\n" +
+                "  \"content\": [{\n" +
+                "    \"text\": \"FromTets\",\n" +
+                "    \"subject\": \"Test purposes\",\n" +
+                "    \"email\": \"test@tests.test\",\n" +
+                "    \"type\": \"EMAIL\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"type\": \"TEXT\",\n" +
+                "    \"text\": \"these data are tests only\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"type\": \"IMAGE\",\n" +
+                "    \"url\": \"www.googl.com/updateFromTests\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"type\": \"LINE\",\n" +
+                "    \"data\": [{\"category\": \"yo\", \"value\": 23}, {\"category\": \"yo2\", \"value\": 23}, {\"category\": \"yo3\", \"value\": 23}]\n" +
+                "  }]\n" +
+                "}";
+        return (ObjectNode) mapper.readValue(dataContent, JsonNode.class);
+    }
 
     //also check for role cases;
     public static ObjectNode objectNodeWithPublicWriteAccess() {
@@ -29,11 +66,14 @@ public class Helper {
 
 
     /* Returns the result of the authentication of the previously added user */
-    public static Http.RequestBuilder authUser() {
-        ObjectNode userNode = Helper.objectNodeWithPublicWriteAccess();
+    public static String authUser(Application app) {
+        ObjectNode userNode = Json.newObject();
         userNode.put("username", "admin");
         userNode.put("password", "admin");
-        return buildRequest("POST",userNode,"authenticate/");
+        Http.RequestBuilder request =  buildRequest(POST,userNode,"/authenticate/");
+        Result result = route(app, request);
+        String token = Helper.getToken(result);
+        return  BEARER+token;
     }
 
     /* Returns the String token
@@ -41,7 +81,6 @@ public class Helper {
     public static String getToken(Result result) {
         String resultStr = play.test.Helpers.contentAsString(result);
         ObjectNode json = (ObjectNode) Json.parse(resultStr);
-        System.out.println("RESPONSE: " + json.toString());
         return json.get("token").asText();
     }
 

@@ -26,9 +26,8 @@ import static utils.Constants.WRONG_TOKEN;
 public class ContentControllerTest {
 
     private static String AuthURL = "/content/";
-    private static String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiNWRhZGEwM2VlZTVjZDkwYjljN2NjOTM2IiwiaXNzIjoiZXhjZXJjaXNlQXBpIiwiZXhwIjoxODg3OTczNDM5fQ.hnS0cK8V4341gfNIcUEkGfn7ysKvIBBtem_Mu0R5UWA";
-    private static final String BEARER_Token = BEARER + token;
-    private static final String WrongToken = BEARER +"asdasdjasdhjaisdfhjknxczlzidhkjvnc.sodifhjsdf.sdfhksdl";
+    private static String BEARER_Token = null;
+    private static final String WrongToken = BEARER +"asdasdeyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiNWRhZGEwM2VlZTVjZDkwYjljN2NjOTM2IiwiaXNzIjoiZXhjZXJjaXNlQXBpIiwiZXhwIjoxODg3OTczNDM5fQ.hnS0cK8hksdl";
     private static Application app;
     private Content content;
 
@@ -36,6 +35,7 @@ public class ContentControllerTest {
     public static void startPlay() {
         app = Helpers.fakeApplication();
         Helpers.start(app);
+        BEARER_Token = Helper.authUser(app);
         MongoDB mongoDB = app.injector().instanceOf(MongoDB.class);
     }
 
@@ -49,20 +49,18 @@ public class ContentControllerTest {
 
     @Test
     public void createContentOK() throws IOException {
-        ObjectNode dataNode = Json.newObject();
-//        dataNode.put("name", "createName from tests");
-//        dataNode.put("description", "description created from tests");
-//        dataNode.put("parentId", "5dada6f7ee5cd920804cdb31");
-        Http.RequestBuilder request = Helper.buildRequest(POST, BEARER_Token, dataNode, AuthURL);
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode JsonNodeDataContent = Helper.contentBuilder();
+        Http.RequestBuilder request = Helper.buildRequest(POST, BEARER_Token, JsonNodeDataContent, AuthURL);
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
-        ObjectMapper mapper = new ObjectMapper();
         JsonNode actualObj = mapper.readValue(resultStr, JsonNode.class);
         content = DatabaseUtils.jsonToJavaClass(actualObj, Content.class);
         System.out.println(content);
         assertEquals(OK, result.status());
 
     }
+
 
     @Test
     public void createContentAuthorizationMissing() {
@@ -79,7 +77,7 @@ public class ContentControllerTest {
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);
-        assertEquals(BAD_REQUEST, result.status());
+        assertEquals(UNSUPPORTED_MEDIA_TYPE, result.status());
     }
 
     @Test
@@ -95,41 +93,30 @@ public class ContentControllerTest {
     public void updateContentMissingBodyRequest() {
         Http.RequestBuilder request = Helper.buildRequest(PUT, BEARER_Token, AuthURL);
         Result result = route(app, request);
-        assertEquals(BAD_REQUEST, result.status());
+        assertEquals(UNSUPPORTED_MEDIA_TYPE, result.status());
     }
 
     @Test
     public void updateContentFakeAuthorization() {
         ObjectNode dataNode = Json.newObject();
-//        dataNode.put("name", "UPDATED FROM TEST");
-//        dataNode.put("description", "UPDATED From tests yap updated again");
-//        dataNode.put("parentId", "5dada6f7ee5cd920804cdb31");
-//        dataNode.put("_id", "5dada6f7ee5cd920804cdb31");
         Http.RequestBuilder request = Helper.buildRequest(PUT, WRONG_TOKEN, dataNode, AuthURL);
         Result result = route(app, request);
-        assertEquals(UNAUTHORIZED, result.status());
+        assertEquals(FORBIDDEN, result.status());
     }
 
     @Test
     public void updateContentAuthorizationMissing() {
         ObjectNode dataNode = Json.newObject();
-//        dataNode.put("name", "UPDATED FROM TEST");
-//        dataNode.put("description", "UPDATED From tests yap updated again");
-//        dataNode.put("parentId", "5dada6f7ee5cd920804cdb31");
-//        dataNode.put("_id", "5dada6f7ee5cd920804cdb31");
         Http.RequestBuilder request = Helper.buildRequest(PUT, dataNode, AuthURL);
         Result result = route(app, request);
         assertEquals(FORBIDDEN, result.status());
     }
 
     @Test
-    public void updateContentOK() {
-        ObjectNode dataNode = Json.newObject();
-//        dataNode.put("name", content.getContent() + " updated");
-//        dataNode.put("description", "dashboard.getDescription()" + " Updated");
-//        dataNode.put("parentId", "dashboard.getParentId()");
-//        dataNode.put("_id", "dashboard.getId().toString()");
-        Http.RequestBuilder request = Helper.buildRequest(PUT, BEARER_Token, dataNode, AuthURL);
+    public void updateContentOK() throws IOException {
+        ObjectNode jsonNodeDataContent = Helper.contentBuilder();
+        jsonNodeDataContent.put("_id","5daeb67eee5cd92af88b7c9d");
+        Http.RequestBuilder request = Helper.buildRequest(PUT, BEARER_Token, jsonNodeDataContent, AuthURL);
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);
