@@ -3,6 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.client.MongoCollection;
 import models.collection.Dashboard;
 import mongo.MongoDB;
 import org.junit.AfterClass;
@@ -15,27 +16,31 @@ import play.mvc.Result;
 import play.test.Helpers;
 import utils.DatabaseUtils;
 import java.io.IOException;
+import java.util.Random;
 import static org.junit.Assert.assertEquals;
+import static play.mvc.Http.Status.NOT_FOUND;
 import static play.mvc.Http.Status.OK;
 import static play.test.Helpers.*;
-import static utils.Constants.BEARER;
+import static utils.Constants.*;
 
 
 public class DashboardControllerTest {
 
     private static String AuthURL = "/dashboard/";
-    private static String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiNWRhZGEwM2VlZTVjZDkwYjljN2NjOTM2IiwiaXNzIjoiZXhjZXJjaXNlQXBpIiwiZXhwIjoxODg3OTczNDM5fQ.hnS0cK8V4341gfNIcUEkGfn7ysKvIBBtem_Mu0R5UWA";
-    private static final String BEARER_Token = BEARER + token;
-    private static final String WrongToken = "asdasdjasdhjaisdfhjknxczlzidhkjvnc.sodifhjsdf.sdfhksdl";
+    private static String BEARER_Token;
+    private static final String WrongToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiNWRhZGEwM2VlZTVjZDkwYjljN2NjOTM2IiwiaXNzIjoiZXhjZXJjaXNlQXBpIhjsdf.sdfhksdl";
     private static Application app;
-    private Dashboard dashboard;
-
+    private static MongoDB mongoDB;
+    private static Dashboard dashboard;
+    private Random rand = new Random();
+    private int randomInt = rand.nextInt(1000);
 
     @BeforeClass
     public static void startPlay() {
         app = Helpers.fakeApplication();
         Helpers.start(app);
-        MongoDB mongoDB = app.injector().instanceOf(MongoDB.class);
+        BEARER_Token = Helper.authUser(app);
+        mongoDB = app.injector().instanceOf(MongoDB.class);
     }
 
     @AfterClass
@@ -49,8 +54,8 @@ public class DashboardControllerTest {
     @Test
     public void createDashboardOK() throws IOException {
         ObjectNode dataNode = Json.newObject();
-        dataNode.put("name", "createName from tests");
-        dataNode.put("description", "description created from tests");
+        dataNode.put("name", "createName from tests"+randomInt);
+        dataNode.put("description", "description created from tests"+randomInt);
         dataNode.put("parentId", "5dada6f7ee5cd920804cdb31");
 
         Http.RequestBuilder request = Helper.buildRequest(POST, BEARER_Token, dataNode, AuthURL);
@@ -78,7 +83,7 @@ public class DashboardControllerTest {
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);
-        assertEquals(BAD_REQUEST, result.status());
+        assertEquals(UNSUPPORTED_MEDIA_TYPE, result.status());
     }
 
     @Test
@@ -92,8 +97,11 @@ public class DashboardControllerTest {
 
     @Test
     public void updateDashboardMissingBodyRequest() {
-        Http.RequestBuilder request = Helper.buildRequest(PUT, BEARER_Token, AuthURL);
+        ObjectNode dataNode = Json.newObject();
+        Http.RequestBuilder request = Helper.buildRequest(PUT, BEARER_Token,dataNode, AuthURL);
         Result result = route(app, request);
+        String resultStr = play.test.Helpers.contentAsString(result);
+        System.out.println(resultStr);
         assertEquals(BAD_REQUEST, result.status());
     }
 
@@ -123,11 +131,13 @@ public class DashboardControllerTest {
 
     @Test
     public void updateDashboardOK() {
+        MongoCollection<Dashboard> dashboardMongoCollection = mongoDB.getDatabase().getCollection(DASHBOARD, Dashboard.class);
+        Dashboard doc = dashboardMongoCollection.find().first();
         ObjectNode dataNode = Json.newObject();
-        dataNode.put("name", dashboard.getName() + " updated");
-        dataNode.put("description", dashboard.getDescription() + " updated");
-        dataNode.put("parentId", dashboard.getParentId());
-        dataNode.put("_id", dashboard.getId().toString());
+        dataNode.put("name", doc.getName() + " updated");
+        dataNode.put("description", doc.getDescription() + " updated");
+        dataNode.put("parentId", doc.getParentId());
+        dataNode.put("_id", doc.getId().toString());
 
         Http.RequestBuilder request = Helper.buildRequest(PUT, BEARER_Token, dataNode, AuthURL);
         Result result = route(app, request);
@@ -154,7 +164,9 @@ public class DashboardControllerTest {
 
     @Test
     public void getDashboardByIdOK() {
-        Http.RequestBuilder request = Helper.buildRequest(GET, BEARER_Token, AuthURL);
+        MongoCollection<Dashboard> dashboardMongoCollection = mongoDB.getDatabase().getCollection(DASHBOARD, Dashboard.class);
+        Dashboard doc = dashboardMongoCollection.find().first();
+        Http.RequestBuilder request = Helper.buildRequest(GET, BEARER_Token, AuthURL+doc.getId().toString());
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);
