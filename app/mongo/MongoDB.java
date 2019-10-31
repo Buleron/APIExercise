@@ -6,6 +6,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
 import lombok.Getter;
+import models.collection.Content;
 import models.collection.chat.ChatMessage;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -46,12 +47,13 @@ public class MongoDB {
         com.mongodb.client.MongoDatabase database = client.getDatabase(db);
         // add class model if codec error;
         ClassModel<ChatMessage> chatMessage = ClassModel.builder(ChatMessage.class).enableDiscriminator(true).build();
+        ClassModel<Content> content = ClassModel.builder(Content.class).enableDiscriminator(true).build();
         CodecProvider pojoCodecProvider =
                 PojoCodecProvider.builder()
                         .conventions(Arrays.asList(ANNOTATION_CONVENTION))
                         .register("models")
                         // and also register class model if codec error;
-                        .register(chatMessage)
+                        .register(chatMessage,content)
                         .automatic(true).build();
 
 
