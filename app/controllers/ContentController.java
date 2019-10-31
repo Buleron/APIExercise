@@ -1,6 +1,6 @@
 package controllers;
 
-import models.collection.Content;
+import models.collection.content.Content;
 import models.collection.User;
 import oauth2.PlatformAttributes;
 import play.mvc.BodyParser;
@@ -18,23 +18,23 @@ import java.util.concurrent.CompletableFuture;
 
 public class ContentController {
     @Inject
-    MongoDB mongoDB;
-    @Inject
     MessagesApi messagesApi;
     @Inject
     HttpExecutionContext context;
+    @Inject
+    ContentService service;
 
     public CompletableFuture<Result> all(Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> new ContentService(mongoDB.getDatabase()).all(context.current(),authUser))
+        return CompletableFuture.supplyAsync(() -> service.all(authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    public CompletableFuture<Result> findById(String id,Http.RequestHeader reqHeader) {
+    public CompletableFuture<Result> findById(String id, Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> new ContentService(mongoDB.getDatabase()).findById(id, context.current(),authUser))
+        return CompletableFuture.supplyAsync(() -> service.findById(id, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
@@ -44,7 +44,7 @@ public class ContentController {
     public CompletableFuture<Result> save(Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return ServiceUtils.parseBodyOfType(context.current(), Content.class)
-                .thenCompose((item) -> new ContentService(mongoDB.getDatabase()).save(item, context.current(),authUser))
+                .thenCompose((item) -> service.save(item, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
@@ -54,7 +54,7 @@ public class ContentController {
     public CompletableFuture<Result> update(Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return ServiceUtils.parseBodyOfType(context.current(), Content.class)
-                .thenCompose((item) -> new ContentService(mongoDB.getDatabase()).update(item, context.current(),authUser))
+                .thenCompose((item) -> service.update(item, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
@@ -62,7 +62,7 @@ public class ContentController {
 
     public CompletableFuture<Result> delete(String id,Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> new ContentService(mongoDB.getDatabase()).delete(id, context.current(),authUser))
+        return CompletableFuture.supplyAsync(() -> service.delete(id, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));

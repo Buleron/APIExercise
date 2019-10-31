@@ -1,8 +1,11 @@
-package Interfaces;
+package models.collection.content;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import models.*;
+import models.collection.content.EmailContent;
+import models.collection.content.ImageContent;
+import models.collection.content.LineContent;
+import models.collection.content.TextContent;
 import models.enums.ContentType;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME,

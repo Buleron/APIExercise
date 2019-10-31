@@ -14,24 +14,22 @@ import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AccessControl {
     // access level per row
     public static final String READ_ACL = "readACL";
     public static final String WRITE_ACL = "writeACL";
-    // access level per collection
-    public static final String READ_COLLECTION_ACL = "read";
-    public static final String WRITE_COLLECTION_ACL = "write";
 
     private AccessLevelType type;
-    private List<Roles> userRoles;
+    private List<String> userRoles;
 
     /**
      * constructor
      */
     public AccessControl(User user, AccessLevelType type){
         this.type = type;
-        userRoles = user.getRoles();
+        userRoles = user.getRoles().stream().map(ObjectId::toString).collect(Collectors.toList());
     }
 
     /**

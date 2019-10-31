@@ -12,6 +12,7 @@ import jwt.JwtValidator;
 import models.collection.User;
 import models.collection.chat.ChatMessage;
 import models.exceptions.RequestException;
+import models.responses.PaginatedChatMessages;
 import mongo.MongoDB;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -52,16 +53,14 @@ public class ChatService {
         }, context);
     }
 
-    public CompletableFuture<List<ChatMessage>> findByUsersIdRoomIdPagination(Executor context, String roomId, String userId, String search, int limit, int skip, String until) {
+    public CompletableFuture<PaginatedChatMessages> findByUsersIdRoomIdPagination(Executor context, String roomId, String userId, String search, int limit, int skip, String until) {
         return CompletableFuture.supplyAsync(() -> {
-
-            List<ChatMessage> items = new ArrayList<>();
             MongoCollection<ChatMessage> collection = mongoDB.getDatabase().getCollection(CHAT, ChatMessage.class);
             FindIterable<ChatMessage> list = collection.find();
 
             List<Bson> filters = new ArrayList<>();
-            if (!Strings.isNullOrEmpty(until))
-                filters.add(Filters.lte("_id", new ObjectId(until)));
+            String pageToken = Strings.isNullOrEmpty(until) ? new ObjectId().toString() : until;
+            filters.add(Filters.lte("_id", new ObjectId(pageToken)));
 
             if (!Strings.isNullOrEmpty(roomId))
                 filters.add(Filters.eq("roomId", new ObjectId(roomId)));
@@ -75,9 +74,8 @@ public class ChatService {
             if (filters.size() > 0)
                 list = list.filter(Filters.and(filters));
 
-            list.limit(limit).skip(skip).sort(Sorts.ascending("_id")).into(items);
-
-            return items;
+            List<ChatMessage> items = list.limit(limit).skip(skip).sort(Sorts.ascending("_id")).into(new ArrayList<>());
+            return new PaginatedChatMessages(until, items);
         }, context);
     }
 

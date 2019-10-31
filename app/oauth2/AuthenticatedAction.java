@@ -77,9 +77,7 @@ public class AuthenticatedAction extends Action<Authenticated> {
         try {
             String userID = userToken.getUserId(token);
             MongoCollection<User> usr = mongoDB.getDatabase().getCollection(USERS, User.class);
-            BasicDBObject query = new BasicDBObject();
-            query.put("_id", new ObjectId(userID));
-            return usr.find(query).first();
+            return usr.find(Filters.eq("_id", new ObjectId(userID))).first();
         } catch (IllegalArgumentException | NullPointerException ex) {
             ex.printStackTrace();
             throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, ACCESS_FORBIDDEN));

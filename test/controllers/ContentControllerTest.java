@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.MongoCollection;
-import models.collection.Content;
+import models.collection.content.Content;
 import mongo.MongoDB;
 import org.bson.Document;
 import org.junit.AfterClass;

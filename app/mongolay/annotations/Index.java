@@ -1,4 +1,5 @@
 package mongolay.annotations;
+
 import mongolay.utils.IndexType;
 import java.lang.annotation.*;
 

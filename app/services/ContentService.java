@@ -1,5 +1,7 @@
 package services;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
@@ -7,11 +9,20 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import models.collection.Content;
+import com.sun.javaws.exceptions.InvalidArgumentException;
+import data.ContentDataAccess;
+import data.DataAccess;
+import models.collection.Dashboard;
+import models.collection.content.Content;
 import models.collection.User;
+import models.enums.AccessLevelType;
 import models.exceptions.RequestException;
+import modules.SingleThreadedExecutionContext;
+import mongolay.MongoRelay;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import play.i18n.MessagesApi;
+import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,117 +33,59 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import static utils.Constants.*;
 
+@Singleton
 public class ContentService {
+	@Inject
     private MongoDatabase database;
-    private AccessService accessService = new AccessService();
 
-    public ContentService(MongoDatabase mongoDatabase) {
-        this.database = mongoDatabase;
+	@Inject
+	HttpExecutionContext context;
+	@Inject
+	SingleThreadedExecutionContext singleThreadedExecutionContext;
+
+    public CompletableFuture<List<Content>> all(User authUser) {
+		MongoRelay relay = new MongoRelay(database, authUser).withACL(Content.class, AccessLevelType.READ);
+		return new ContentDataAccess(database).withMongoRelay(relay).all(context.current());
     }
 
-    public CompletableFuture<List<Document>> all(Executor executor, User authUser) {
-        return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Document> content = database.getCollection(CONTENT, Document.class);
-
-            if (content.find().into(new ArrayList<>()) == null)
-                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
-
-            FindIterable<Document> doc = content.find();
-            List<String> access = accessService.GetAccesses(authUser);
-            return doc
-                    .filter(Filters.or(Filters.in(READ_ACL, access), Filters.size(READ_ACL, 0)))
-                    .into(new ArrayList<>());
-        }, executor);
+    public CompletableFuture<Content> findById(String x, User authUser) {
+		MongoRelay relay = new MongoRelay(database, authUser)
+				.withACL(Content.class, AccessLevelType.READ);
+		try {
+			return new ContentDataAccess(database).withMongoRelay(relay).byId(new ObjectId(x), singleThreadedExecutionContext);
+		} catch (IllegalArgumentException ex) {
+			throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "fasadsga"));
+		}
     }
 
-    public CompletableFuture<Document> findById(String x, Executor context, User authUser) {
-        return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Document> content = database.getCollection(CONTENT, Document.class);
+    public CompletableFuture<Content> save(Content resContent, User authUser) {
+		MongoRelay relay = new MongoRelay(database, authUser).withACL(Content.class, AccessLevelType.WRITE);
 
-            BasicDBObject query = new BasicDBObject();
-            query.put("_id", new ObjectId(x));
-
-            if (content.find(query).first() == null)
-                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
-
-            List<String> access = accessService.GetAccesses(authUser);
-            Document doc = content.find(Filters.and(Filters.or(Filters.in(READ_ACL, access), Filters.size(READ_ACL, 0)), Filters.in("_id", new ObjectId(x)))).first();
-
-            if (doc == null)
-                throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, PERMISSION_DENIED));
-            return doc;
-        }, context);
-    }
-
-    public CompletableFuture<Content> save(Content resContent, Executor context, User authUser) {
-        return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Content> content = database.getCollection(CONTENT, Content.class);
-
-            Set<String> generalAccesses = new HashSet<>();
-            //todo set access for user that create this :/
-            generalAccesses.add(authUser.getId().toString());
-            //todo or set it as public :/
+		Set<String> generalAccesses = new HashSet<>();
+		//todo set access for user that create this :/
+		generalAccesses.add(authUser.getId().toString());
+		//todo or set it as public :/
 //            generalAccesses.add("*");
-            Set<String> read = new HashSet<>(generalAccesses);
-            Set<String> write = new HashSet<>(generalAccesses);
+		Set<String> read = new HashSet<>(generalAccesses);
+		Set<String> write = new HashSet<>(generalAccesses);
 
-            read.addAll(resContent.getReadACL());
-            write.addAll(resContent.getReadACL());
+		read.addAll(resContent.getReadACL());
+		write.addAll(resContent.getReadACL());
 
-            resContent.setReadACL(read);
-            resContent.setWriteACL(write);
+		resContent.setReadACL(read);
+		resContent.setWriteACL(write);
+		return new ContentDataAccess(database).withMongoRelay(relay).insert(resContent, context.current());
+	}
 
-            resContent.setId(new ObjectId());
-            content.insertOne(resContent);
-            return resContent;
-        }, context);
+    public CompletableFuture<Content> update(Content resContent, User authUser) {
+		MongoRelay relay = new MongoRelay(database, authUser).withACL(Content.class, AccessLevelType.WRITE);
+		return new ContentDataAccess(database).withMongoRelay(relay).insert(resContent, context.current());
     }
 
-    public CompletableFuture<Content> update(Content resContent, Executor context, User authUser) {
-        return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Document> content = database.getCollection(CONTENT);
-
-            BasicDBObject query = new BasicDBObject();
-            query.put("_id", resContent.getId());
-
-            if (content.find(query).first() == null)
-                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
-
-            List<String> access = accessService.GetAccesses(authUser);
-            Document cont = content.find(Filters.and(Filters.or(Filters.in(WRITE_ACL, access), Filters.size(WRITE_ACL, 0)), Filters.in("_id", resContent.getId()))).first();
-
-            if (cont == null)
-                throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, PERMISSION_DENIED));
-
-            //todo overwrite ReadACL and WriteAcl
-
-            UpdateResult updateResult = content.updateOne(Filters.eq("_id", resContent.getId()), new BasicDBObject("$set", resContent));
-            if (updateResult.getModifiedCount() > 0)
-                return resContent;
-            throw new CompletionException(new RequestException(Http.Status.NOT_MODIFIED, updateResult));
-        }, context);
-    }
-
-    public CompletableFuture<DeleteResult> delete(String contentID, Executor context, User authUser) {
-        return CompletableFuture.supplyAsync(() -> {
-            MongoCollection<Document> content = database.getCollection(CONTENT);
-
-            BasicDBObject query = new BasicDBObject();
-            query.put("_id", new ObjectId(contentID));
-
-            if (content.find(query).first() == null)
-                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
-
-            List<String> access = accessService.GetAccesses(authUser);
-            Document cont =content.find(Filters.and(Filters.or(Filters.in(WRITE_ACL, access), Filters.size(WRITE_ACL, 0)), Filters.in("_id", new ObjectId(contentID)))).first();
-
-            if (cont == null)
-                throw new CompletionException(new RequestException(Http.Status.UNAUTHORIZED, PERMISSION_DENIED));
-
-            DeleteResult deleteResult = content.deleteOne(query);
-            if (deleteResult.getDeletedCount() > 0)
-                return deleteResult;
-            throw new CompletionException(new RequestException(Http.Status.NOT_MODIFIED, deleteResult));
-        }, context);
+    public CompletableFuture<Content> delete(String contentID, User authUser) {
+    	return this.findById(contentID, authUser).thenCompose((item) -> {
+			MongoRelay relay = new MongoRelay(database, authUser).withACL(Content.class, AccessLevelType.WRITE);
+			return new ContentDataAccess(database).withMongoRelay(relay).deleteAsynch(item, context.current());
+		});
     }
 }
