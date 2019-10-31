@@ -1,18 +1,9 @@
 package mongolay.example;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import models.collection.MongoCollectionModel;
-import models.collection.User;
-import models.utils.ObjectIdDeSerializer;
-import models.utils.ObjectIdStringSerializer;
+import models.collection.CollectionModel;
 import mongolay.annotations.Entity;
-import mongolay.annotations.Reference;
-import org.bson.codecs.pojo.annotations.BsonIgnore;
-import org.bson.types.ObjectId;
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
@@ -21,12 +12,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Entity(collection = "descriptions")
 @Data
 @AllArgsConstructor
-public class ProductDescription extends MongoCollectionModel {
-	@NotEmpty
-	private String size;
-	@NotEmpty
-	private String weight;
+public class ProductDescription extends CollectionModel {
+    @NotEmpty
+    private String size;
+    @NotEmpty
+    private String weight;
 
-	private String name;
-	private String brand;
+    private String name;
+    private String brand;
 }
