@@ -30,6 +30,7 @@ public class AccessControl {
     public AccessControl(User user, AccessLevelType type){
         this.type = type;
         userRoles = user.getRoles().stream().map(ObjectId::toString).collect(Collectors.toList());
+        userRoles.add(user.getId().toString());
     }
 
     /**

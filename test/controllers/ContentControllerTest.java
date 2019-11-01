@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.MongoCollection;
-import models.collection.content.Content;
+import models.collection.content.BaseContent;
+import models.collection.content.DashboardContent;
 import mongo.MongoDB;
 import org.bson.Document;
 import org.junit.AfterClass;
@@ -17,8 +18,6 @@ import play.mvc.Result;
 import play.test.Helpers;
 import utils.DatabaseUtils;
 import java.io.IOException;
-import java.util.Random;
-
 import static org.junit.Assert.assertEquals;
 import static play.mvc.Http.Status.*;
 import static play.mvc.Http.Status.NOT_FOUND;
@@ -31,7 +30,6 @@ public class ContentControllerTest {
     private static String BEARER_Token = null;
     private static final String WrongToken = BEARER + "asdasdeyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiNWRhZGEwM2VlZTVjZDkwYjljN2NjOTM2IiwiaXNzIjoiZXhjZXJjaXNlQXBpIiwiZXhwIjoxODg3OTczNDM5fQ.hnS0cK8hksdl";
     private static Application app;
-    private Content content;
     private static MongoDB mongoDB;
 
     @BeforeClass
@@ -58,8 +56,8 @@ public class ContentControllerTest {
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         JsonNode actualObj = mapper.readValue(resultStr, JsonNode.class);
-        content = DatabaseUtils.jsonToJavaClass(actualObj, Content.class);
-        System.out.println(content);
+        DashboardContent dashboardContent = DatabaseUtils.jsonToJavaClass(actualObj, DashboardContent.class);
+        System.out.println(dashboardContent);
         assertEquals(OK, result.status());
 
     }
@@ -122,10 +120,6 @@ public class ContentControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonNodeDataContent;
         jsonNodeDataContent = mapper.convertValue(doc,ObjectNode.class);
-        jsonNodeDataContent.put("_id",doc.get("_id").toString());
-        Random rand = new Random();
-        double rand_dub1 = rand.nextDouble();
-        jsonNodeDataContent.put("dashboardId",rand_dub1);
         Http.RequestBuilder request = Helper.buildRequest(PUT, BEARER_Token, jsonNodeDataContent, AuthURL);
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
@@ -151,10 +145,9 @@ public class ContentControllerTest {
 
     @Test
     public void getContentByIdOK() {
-        MongoCollection<Document> content = mongoDB.getDatabase().getCollection(CONTENT, Document.class);
-        Document doc = content.find().first();
-        doc.get("_id").toString();
-        Http.RequestBuilder request = Helper.buildRequest(GET, BEARER_Token, AuthURL + doc.get("_id").toString());
+        MongoCollection<DashboardContent> content = mongoDB.getDatabase().getCollection(CONTENT, DashboardContent.class);
+        DashboardContent doc = content.find().first();
+        Http.RequestBuilder request = Helper.buildRequest(GET, BEARER_Token, AuthURL + doc.getId().toString());
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);
@@ -211,9 +204,9 @@ public class ContentControllerTest {
 
     @Test
     public void deleteContentResultOK() {
-        MongoCollection<Document> content = mongoDB.getDatabase().getCollection(CONTENT, Document.class);
-        Document doc = content.find().first();
-        Http.RequestBuilder request = Helper.buildRequest(DELETE, BEARER_Token, AuthURL + doc.get("_id").toString());
+        MongoCollection<DashboardContent> content = mongoDB.getDatabase().getCollection(CONTENT, DashboardContent.class);
+        DashboardContent doc = content.find().first();
+        Http.RequestBuilder request = Helper.buildRequest(DELETE, BEARER_Token, AuthURL + doc.getId().toString());
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);

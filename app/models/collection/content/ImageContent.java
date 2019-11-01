@@ -6,7 +6,7 @@ import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 
 @Data
 @BsonDiscriminator(key = "type", value = "IMAGE")
-public class ImageContent implements IContent {
+public class ImageContent extends BaseContent {
     ContentType type = ContentType.IMAGE;
     private String url;
 }

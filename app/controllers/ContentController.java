@@ -1,11 +1,10 @@
 package controllers;
 
-import models.collection.content.Content;
+import models.collection.content.DashboardContent;
 import models.collection.User;
 import oauth2.PlatformAttributes;
 import play.mvc.BodyParser;
 import play.mvc.Result;
-import mongo.MongoDB;
 import play.i18n.MessagesApi;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
@@ -37,13 +36,16 @@ public class ContentController {
         return CompletableFuture.supplyAsync(() -> service.findById(id, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
-                .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
+                .exceptionally((exception) -> {
+                    exception.printStackTrace();
+                    return DatabaseUtils.resultFromThrowable(exception, messagesApi);
+                });
     }
 
     @BodyParser.Of(BodyParser.Json.class)
     public CompletableFuture<Result> save(Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return ServiceUtils.parseBodyOfType(context.current(), Content.class)
+        return ServiceUtils.parseBodyOfType(context.current(), DashboardContent.class)
                 .thenCompose((item) -> service.save(item, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
@@ -53,7 +55,7 @@ public class ContentController {
     @BodyParser.Of(BodyParser.Json.class)
     public CompletableFuture<Result> update(Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return ServiceUtils.parseBodyOfType(context.current(), Content.class)
+        return ServiceUtils.parseBodyOfType(context.current(), DashboardContent.class)
                 .thenCompose((item) -> service.update(item, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)

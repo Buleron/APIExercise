@@ -3,8 +3,9 @@ package services;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import data.ContentDataAccess;
+import data.DataAccess;
 import models.collection.User;
-import models.collection.content.Content;
+import models.collection.content.DashboardContent;
 import models.enums.AccessLevelType;
 import models.exceptions.RequestException;
 import modules.SingleThreadedExecutionContext;
@@ -28,23 +29,27 @@ public class ContentService {
 	@Inject
 	SingleThreadedExecutionContext singleThreadedExecutionContext;
 
-    public CompletableFuture<List<Content>> all(User authUser) {
-		MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(Content.class, AccessLevelType.READ);
+    public CompletableFuture<List<DashboardContent>> all(User authUser) {
+		MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(DashboardContent.class, AccessLevelType.READ);
 		return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).all(context.current());
     }
 
-    public CompletableFuture<Content> findById(String x, User authUser) {
+    public CompletableFuture<DashboardContent> findById(String x, User authUser) {
 		MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser)
-				.withACL(Content.class, AccessLevelType.READ);
+				.withACL(DashboardContent.class, AccessLevelType.READ);
 		try {
-			return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).byId(new ObjectId(x), singleThreadedExecutionContext);
+			DataAccess<DashboardContent> access = new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay);
+			return access.byIdAsync(new ObjectId(x), context.current());
 		} catch (IllegalArgumentException ex) {
+			throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "fasadsga"));
+		} catch (NullPointerException ex) {
+			ex.printStackTrace();
 			throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "fasadsga"));
 		}
     }
 
-    public CompletableFuture<Content> save(Content resContent, User authUser) {
-		MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(Content.class, AccessLevelType.WRITE);
+    public CompletableFuture<DashboardContent> save(DashboardContent resDashboardContent, User authUser) {
+		MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(DashboardContent.class, AccessLevelType.WRITE);
 
 		Set<String> generalAccesses = new HashSet<>();
 		//todo set access for user that create this :/
@@ -54,23 +59,23 @@ public class ContentService {
 		Set<String> read = new HashSet<>(generalAccesses);
 		Set<String> write = new HashSet<>(generalAccesses);
 
-		read.addAll(resContent.getReadACL());
-		write.addAll(resContent.getReadACL());
+		read.addAll(resDashboardContent.getReadACL());
+		write.addAll(resDashboardContent.getReadACL());
 
-		resContent.setReadACL(read);
-		resContent.setWriteACL(write);
-		return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).insert(resContent, context.current());
+		resDashboardContent.setReadACL(read);
+		resDashboardContent.setWriteACL(write);
+		return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).insert(resDashboardContent, context.current());
 	}
 
-    public CompletableFuture<Content> update(Content resContent, User authUser) {
-		MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(Content.class, AccessLevelType.WRITE);
-		return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).insert(resContent, context.current());
+    public CompletableFuture<DashboardContent> update(DashboardContent resDashboardContent, User authUser) {
+		MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(DashboardContent.class, AccessLevelType.WRITE);
+		return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).insert(resDashboardContent, context.current());
     }
 
-    public CompletableFuture<Content> delete(String contentID, User authUser) {
+    public CompletableFuture<DashboardContent> delete(String contentID, User authUser) {
     	return this.findById(contentID, authUser).thenCompose((item) -> {
-			MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(Content.class, AccessLevelType.WRITE);
-			return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).deleteAsynch(item, context.current());
+			MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(DashboardContent.class, AccessLevelType.WRITE);
+			return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).deleteAsync(item, context.current());
 		});
     }
 }

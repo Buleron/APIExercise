@@ -23,6 +23,8 @@ public class FieldReference {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             return null;
+        } catch (NullPointerException ex) {
+            return null;
         }
     }
 

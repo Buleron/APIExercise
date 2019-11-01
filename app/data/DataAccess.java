@@ -8,7 +8,6 @@ import models.exceptions.RequestException;
 import mongolay.MongoRelay;
 import mongolay.RelayDatabase;
 import org.bson.types.ObjectId;
-
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +54,7 @@ public class DataAccess<T> {
         return getRelay().getCollection().find(Filters.eq("_id", id), clazz).first();
     }
 
-    public CompletableFuture<T> byId(ObjectId id, Executor context) {
+    public CompletableFuture<T> byIdAsync(ObjectId id, Executor context) {
         return getRelay().getCollection().find(Filters.eq("_id", id), clazz).firstAsych(context);
     }
 
@@ -83,7 +82,7 @@ public class DataAccess<T> {
         return getRelay().getCollection().deleteAsynch(item, context);
     }
 
-    public CompletableFuture<T> deleteAsynch (T item, Executor context) {
+    public CompletableFuture<T> deleteAsync (T item, Executor context) {
         return getRelay().getCollection().deleteAsynch(item, context);
     }
 }

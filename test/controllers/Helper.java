@@ -32,7 +32,7 @@ public class Helper {
     public static ObjectNode contentBuilder() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         String dataContent = "{\n" +
-                "  \"dashboardId\": \"5db83bf08f1ed921046a6dee\",\n" +
+                "  \"dashboardId\": \"5db83b638f1ed921046a6deb\",\n" +
                 "  \"content\": [{\n" +
                 "    \"text\": \"FromTets\",\n" +
                 "    \"subject\": \"Test purposes\",\n" +

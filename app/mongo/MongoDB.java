@@ -48,17 +48,19 @@ public class MongoDB {
         // add class model if codec error;
         ClassModel<ChatMessage> chatMessage = ClassModel.builder(ChatMessage.class).enableDiscriminator(true).build();
 
+        ClassModel<BaseContent> baseContentClassModel = ClassModel.builder(BaseContent.class).enableDiscriminator(true).build();
         ClassModel<EmailContent> emailContentClassModel = ClassModel.builder(EmailContent.class).enableDiscriminator(true).build();
         ClassModel<ImageContent> imageContentClassModel = ClassModel.builder(ImageContent.class).enableDiscriminator(true).build();
         ClassModel<LineContent> lineContentClassModel = ClassModel.builder(LineContent.class).enableDiscriminator(true).build();
         ClassModel<TextContent> textContentClassModel = ClassModel.builder(TextContent.class).enableDiscriminator(true).build();
 
-        ClassModel<Content> content = ClassModel.builder(Content.class).enableDiscriminator(true).build();
+        ClassModel<DashboardContent> content = ClassModel.builder(DashboardContent.class).enableDiscriminator(true).build();
 
         CodecProvider pojoCodecProvider =
                 PojoCodecProvider.builder()
                         .conventions(Arrays.asList(ANNOTATION_CONVENTION))
                         .register("models")
+                        .register(baseContentClassModel, emailContentClassModel, imageContentClassModel, lineContentClassModel, textContentClassModel)
                         // and also register class model if codec error;
                         .register(chatMessage, content)
                         .automatic(true).build();

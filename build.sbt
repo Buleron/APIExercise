@@ -25,6 +25,13 @@ libraryDependencies ++= Seq(
   "org.mongodb" % "mongo-java-driver" % "3.6.4",
   "com.nulab-inc" %% "scala-oauth2-core" % "1.3.0",
   "com.nulab-inc" %% "play2-oauth2-provider" % "1.3.0",
+
+  "com.google.code.gson" % "gson" % "2.8.2",
+  "org.reflections" % "reflections" % "0.9.11",
+  "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.0.0",
+  "org.glassfish" % "javax.el" % "3.0.0",
+  "org.hibernate" % "hibernate-validator" % "6.0.17.Final",
+
   "org.mindrot" % "jbcrypt" % "0.3m",
   // akka related stuff
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -54,3 +61,8 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 //lazy val root = (project in file("."))
 //  .enablePlugins(PlayScala, PlayNettyServer)
 //  .disablePlugins(PlayAkkaHttpServer)
+/*
+
+
+
+ **/

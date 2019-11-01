@@ -4,7 +4,6 @@ import com.mongodb.ReadConcern;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.ListCollectionsIterable;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.CreateCollectionOptions;
@@ -14,7 +13,6 @@ import lombok.Getter;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
-import play.Logger;
 
 import java.util.List;
 
@@ -129,7 +127,7 @@ public class RelayDatabase<T> implements MongoDatabase {
 
 	public RelayCollection<T> getCollection() {
 		// This returns a collection based on initial class definition and collection name
-		return new RelayCollection<>(this, mongoDatabase.getCollection(collectionName, clazz));
+		return new RelayCollection<T>(this, mongoDatabase.getCollection(collectionName, clazz));
 	}
 
 	@Override

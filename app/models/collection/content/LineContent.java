@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @BsonDiscriminator(key = "type", value = "LINE")
-public class LineContent implements IContent {
+public class LineContent extends BaseContent {
     ContentType type = ContentType.LINE;
     List<DataContent> data = new ArrayList<>();
 }
