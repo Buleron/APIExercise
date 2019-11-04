@@ -5,8 +5,17 @@ version := "2.7.x"
 
 scalaVersion := "2.12.8"
 //version := "3.0.3"
-//lazy val models = project.in(file("models")).enablePlugins(PlayScala)
+
+resolvers += Resolver.bintrayIvyRepo("sohoffice", "sbt-plugins")
+
 lazy val root = project.in(file(".")).enablePlugins(PlayScala)
+  .enablePlugins(PlayScala, SwaggerPlugin)
+  .settings(
+    // Make sure you set the swaggerDomainNameSpaces according to your package structure.
+    // You'll need this setting, otherwise swagger will fail.
+    //
+     swaggerDomainNameSpaces := Seq("io")
+  )
 val akkaVersion = "2.5.22"
 val akkaManagementVersion = "1.0.0"
 val akkaHTTPVersion = "10.1.10"
@@ -54,15 +63,3 @@ resolvers += Resolver.url("Typesafe Ivy releases", url("https://repo.typesafe.co
 resolvers += Resolver.typesafeRepo("releases")
 resolvers += Resolver.sbtPluginRepo("releases")
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
-
-
-
-////.dependsOn(models).aggregate(models)
-//lazy val root = (project in file("."))
-//  .enablePlugins(PlayScala, PlayNettyServer)
-//  .disablePlugins(PlayAkkaHttpServer)
-/*
-
-
-
- **/
