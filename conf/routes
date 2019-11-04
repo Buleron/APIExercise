@@ -12,7 +12,6 @@ GET        /docs/swagger-ui/*file        controllers.Assets.at(path:String="/pub
 
 
 + paKontroll
-
 POST        /api/authenticate/             controllers.HomeController.authenticate(request: Request)
 + paKontroll
 GET        /api/chat/:roomId/:token        controllers.ChatController.socket(roomId:String,token:String)

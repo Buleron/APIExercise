@@ -3,6 +3,7 @@ package services;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import lombok.AllArgsConstructor;
 import models.collection.User;
 import models.collection.UserToken;
 import models.exceptions.RequestException;
@@ -19,13 +20,9 @@ import java.util.concurrent.Executor;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
-
+@AllArgsConstructor
 public class HomeService {
     private MongoDatabase database;
-
-    public HomeService(MongoDatabase mongoDatabase) {
-        this.database = mongoDatabase;
-    }
 
     public CompletableFuture<Document> auth(User user, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
