@@ -23,7 +23,6 @@ import static play.mvc.Http.Status.OK;
 import static play.test.Helpers.*;
 import static utils.Constants.*;
 
-
 public class DashboardControllerTest {
 
     private static String AuthURL = "/dashboard/";
@@ -98,7 +97,7 @@ public class DashboardControllerTest {
     @Test
     public void updateDashboardMissingBodyRequest() {
         ObjectNode dataNode = Json.newObject();
-        Http.RequestBuilder request = Helper.buildRequest(PUT, BEARER_Token,dataNode, AuthURL);
+        Http.RequestBuilder request = Helper.buildRequest(PUT, BEARER_Token, dataNode, AuthURL);
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);
@@ -228,7 +227,9 @@ public class DashboardControllerTest {
 
     @Test
     public void deleteDashboardResultOK() {
-        Http.RequestBuilder request = Helper.buildRequest(DELETE, BEARER_Token, AuthURL+dashboard.getId().toString());
+        MongoCollection<Dashboard> dashboardMongoCollection = mongoDB.getDatabase().getCollection(DASHBOARD, Dashboard.class);
+        Dashboard doc = dashboardMongoCollection.find().first();
+        Http.RequestBuilder request = Helper.buildRequest(DELETE, BEARER_Token, AuthURL+doc.getId().toString());
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);

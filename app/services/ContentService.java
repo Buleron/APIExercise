@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import static utils.Constants.NOT_FOUND;
+
 @Singleton
 public class ContentService {
 	@Inject
@@ -40,11 +42,9 @@ public class ContentService {
 		try {
 			DataAccess<DashboardContent> access = new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay);
 			return access.byIdAsync(new ObjectId(x), context.current());
-		} catch (IllegalArgumentException ex) {
-			throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "fasadsga"));
-		} catch (NullPointerException ex) {
+		} catch (IllegalArgumentException | NullPointerException ex) {
 			ex.printStackTrace();
-			throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "fasadsga"));
+			throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST,ex.getMessage()));
 		}
     }
 
@@ -75,7 +75,7 @@ public class ContentService {
     public CompletableFuture<DashboardContent> delete(String contentID, User authUser) {
     	return this.findById(contentID, authUser).thenCompose((item) -> {
     		if(item == null)
-    		 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Item not found to delete"));
+    		 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
 			MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(DashboardContent.class, AccessLevelType.WRITE);
 			return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).deleteAsync(item, context.current());
 		});
