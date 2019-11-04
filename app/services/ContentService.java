@@ -74,6 +74,8 @@ public class ContentService {
 
     public CompletableFuture<DashboardContent> delete(String contentID, User authUser) {
     	return this.findById(contentID, authUser).thenCompose((item) -> {
+    		if(item == null)
+    		 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, "Item not found to delete"));
 			MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(DashboardContent.class, AccessLevelType.WRITE);
 			return new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).deleteAsync(item, context.current());
 		});
