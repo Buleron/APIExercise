@@ -59,7 +59,6 @@ public class DashboardService {
         which.setReadACL(read);
         which.setWriteACL(write);
 
-        which.setId(new ObjectId());
         return new DashboardsDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).insert(which, context.current());
     }
 

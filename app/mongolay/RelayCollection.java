@@ -744,7 +744,7 @@ public class RelayCollection<TDocument> implements MongoCollection<TDocument> {
 		if (item.getObjectId("_id") != null) {
 			item.append("updatedAt", new Date().getTime());
 			UpdateResult result = collection.replaceOne(new BasicDBObject("_id", item.getObjectId("_id")), (TDocument) item);
-			if (result.wasAcknowledged()) {
+			if (result.wasAcknowledged() && result.getModifiedCount() > 0) {
 				return item;
 			}
 			throw new RequestException(Http.Status.NOT_FOUND, "not_found");
@@ -758,7 +758,7 @@ public class RelayCollection<TDocument> implements MongoCollection<TDocument> {
 		if (item.getId() != null) {
 			item.setUpdatedAt(new Date().getTime());
 			UpdateResult result = this.replaceOne(new BasicDBObject("_id", item.getId()), (TDocument) item);
-			if (result.wasAcknowledged()) {
+			if (result.wasAcknowledged() && result.getModifiedCount() > 0) {
 				return item;
 			}
 			throw new RequestException(Http.Status.NOT_FOUND, "not_found");
