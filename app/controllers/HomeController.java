@@ -28,7 +28,7 @@ public class HomeController extends Controller {
     HttpExecutionContext context;
 
     public CompletableFuture<Result> authenticate(Http.Request request) {
-        return ServiceUtils.parseBodyOfType(context.current(), User.class)
+        return ServiceUtils.parseBodyOfType(request.body(), context.current(), User.class)
                 .thenCompose((item) -> new HomeService(mongoDB.getDatabase()).auth(item, context.current()))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)

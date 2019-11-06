@@ -43,20 +43,18 @@ public class ContentController {
     }
 
     @BodyParser.Of(BodyParser.Json.class)
-    public CompletableFuture<Result> save(Http.RequestHeader reqHeader) {
-        User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return ServiceUtils.parseBodyOfType(context.current(), DashboardContent.class)
-                .thenCompose((item) -> service.save(item, authUser))
+    public CompletableFuture<Result> save(Http.Request request) {
+        return ServiceUtils.parseBodyOfType(request.body(), context.current(), DashboardContent.class)
+                .thenCompose((item) -> service.save(item, request.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
     @BodyParser.Of(BodyParser.Json.class)
-    public CompletableFuture<Result> update(Http.RequestHeader reqHeader) {
-        User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return ServiceUtils.parseBodyOfType(context.current(), DashboardContent.class)
-                .thenCompose((item) -> service.update(item, authUser))
+    public CompletableFuture<Result> update(Http.Request request) {
+        return ServiceUtils.parseBodyOfType(request.body(), context.current(), DashboardContent.class)
+                .thenCompose((item) -> service.update(item, request.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));

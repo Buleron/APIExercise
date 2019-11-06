@@ -95,11 +95,11 @@ public class ChatActor extends AbstractActor {
                 return chatMessage;
             } catch (IOException e) {
                 e.printStackTrace();
+                out.tell("Unaccepted message :( should be object", getSelf());
                 throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "bad_request"));
             }
-        }, context).thenCompose((ChatMessage) -> {
-            return chatService.save(ChatMessage, context);
-        }).thenCompose(ServiceUtils::toJsonNode)
+        }, context).thenCompose((ChatMessage) -> chatService.save(ChatMessage))
+                .thenCompose(ServiceUtils::toJsonNode)
                 .thenCompose((json) -> {
                     out.tell(json.toString(), getSelf());
                     return CompletableFuture.completedFuture(json);

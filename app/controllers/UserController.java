@@ -24,7 +24,7 @@ public class UserController {
     HttpExecutionContext context;
 
     public CompletableFuture<Result> allUsers(Http.Request request) {
-        return ServiceUtils.parseBodyOfType(context.current(), User.class)
+        return ServiceUtils.parseBodyOfType(request.body(), context.current(), User.class)
                 .thenCompose((item) -> new UserService(mongoDB.getDatabase()).all(context.current()))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
@@ -41,7 +41,7 @@ public class UserController {
 
     @BodyParser.Of(BodyParser.Json.class)
     public CompletableFuture<Result> save(Http.Request request) {
-        return ServiceUtils.parseBodyOfType(context.current(), User.class)
+        return ServiceUtils.parseBodyOfType(request.body(), context.current(), User.class)
                 .thenCompose((item) -> new UserService(mongoDB.getDatabase()).save(item, context.current()))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
@@ -50,7 +50,7 @@ public class UserController {
 
     @BodyParser.Of(BodyParser.Json.class)
     public CompletableFuture<Result> update(Http.Request request) {
-        return ServiceUtils.parseBodyOfType(context.current(), User.class)
+        return ServiceUtils.parseBodyOfType(request.body(), context.current(), User.class)
                 .thenCompose((item) -> new UserService(mongoDB.getDatabase()).update(item, context.current()))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)

@@ -2,21 +2,27 @@ package services;
 
 import akka.actor.ActorSystem;
 import com.google.common.base.Strings;
+import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.typesafe.config.Config;
+import data.ChatDataAccess;
+import data.ContentDataAccess;
 import jwt.JwtValidator;
 import models.collection.User;
 import models.collection.chat.ChatMessage;
+import models.enums.AccessLevelType;
 import models.exceptions.RequestException;
 import models.responses.PaginatedChatMessages;
 import mongo.MongoDB;
+import mongolay.MongoRelay;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +33,11 @@ import static oauth2.AuthenticatedAction.getUser;
 import static utils.Constants.*;
 
 public class ChatService {
+
     private MongoDB mongoDB;
     private JwtValidator jwtValidator;
-
+    @Inject
+    HttpExecutionContext context;
 
     public ChatService(MongoDB mongoDB, JwtValidator jwtValidator) {
         this.mongoDB = mongoDB;
@@ -79,18 +87,9 @@ public class ChatService {
         }, context);
     }
 
-    public CompletableFuture<ChatMessage> save(ChatMessage chatMessage, Executor context) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                MongoCollection<ChatMessage> message = mongoDB.getDatabase().getCollection(CHAT, ChatMessage.class);
-                chatMessage.setId(new ObjectId());
-                message.insertOne(chatMessage);
-                return chatMessage;
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
-            }
-        }, context);
+    public CompletableFuture<ChatMessage> save(ChatMessage chatMessage) {
+        MongoRelay relay = new MongoRelay(mongoDB.getDatabase()).withACL(ChatMessage.class, AccessLevelType.WRITE);
+        return new ChatDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).insert(chatMessage, context.current());
     }
 
     public User getAuthUserFromToken(String token) {
