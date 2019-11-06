@@ -10,6 +10,7 @@ import lombok.ToString;
 import models.collection.CollectionModel;
 import models.utils.ObjectIdDeSerializer;
 import models.utils.ObjectIdStringSerializer;
+import mongolay.annotations.Entity;
 import mongolay.annotations.Index;
 import mongolay.utils.IndexType;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
@@ -21,6 +22,7 @@ import org.bson.types.ObjectId;
 @NoArgsConstructor
 @Data
 @ToString
+@Entity(collection = "chat")
 public class ChatMessage extends CollectionModel {
     @Index(type = IndexType.DESC)
     @JsonSerialize(using = ObjectIdStringSerializer.class)

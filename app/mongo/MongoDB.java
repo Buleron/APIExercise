@@ -53,6 +53,7 @@ public class MongoDB {
         ClassModel<ImageContent> imageContentClassModel = ClassModel.builder(ImageContent.class).enableDiscriminator(true).build();
         ClassModel<LineContent> lineContentClassModel = ClassModel.builder(LineContent.class).enableDiscriminator(true).build();
         ClassModel<TextContent> textContentClassModel = ClassModel.builder(TextContent.class).enableDiscriminator(true).build();
+        ClassModel<ChatMessage> chatMessageClassModel = ClassModel.builder(ChatMessage.class).enableDiscriminator(true).build();
 
         ClassModel<DashboardContent> content = ClassModel.builder(DashboardContent.class).enableDiscriminator(true).build();
 
@@ -60,7 +61,7 @@ public class MongoDB {
                 PojoCodecProvider.builder()
                         .conventions(Arrays.asList(ANNOTATION_CONVENTION))
                         .register("models")
-                        .register(baseContentClassModel, emailContentClassModel, imageContentClassModel, lineContentClassModel, textContentClassModel)
+                        .register(baseContentClassModel, emailContentClassModel, imageContentClassModel, lineContentClassModel, textContentClassModel,chatMessageClassModel)
                         // and also register class model if codec error;
                         .register(chatMessage, content)
                         .automatic(true).build();

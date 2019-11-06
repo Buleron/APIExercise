@@ -2,7 +2,6 @@ package services;
 
 import akka.actor.ActorSystem;
 import com.google.common.base.Strings;
-import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
@@ -25,7 +24,9 @@ import org.bson.types.ObjectId;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
 import java.util.ArrayList;
+import javax.inject.Inject;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
@@ -33,11 +34,9 @@ import static oauth2.AuthenticatedAction.getUser;
 import static utils.Constants.*;
 
 public class ChatService {
-
+    @Inject
     private MongoDB mongoDB;
     private JwtValidator jwtValidator;
-    @Inject
-    HttpExecutionContext context;
 
     public ChatService(MongoDB mongoDB, JwtValidator jwtValidator) {
         this.mongoDB = mongoDB;
@@ -87,9 +86,9 @@ public class ChatService {
         }, context);
     }
 
-    public CompletableFuture<ChatMessage> save(ChatMessage chatMessage) {
+    public CompletableFuture<ChatMessage> save(ChatMessage chatMessage,Executor context) {
         MongoRelay relay = new MongoRelay(mongoDB.getDatabase()).withACL(ChatMessage.class, AccessLevelType.WRITE);
-        return new ChatDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).insert(chatMessage, context.current());
+        return new ChatDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).insert(chatMessage,context);
     }
 
     public User getAuthUserFromToken(String token) {

@@ -16,6 +16,7 @@ import play.mvc.Http;
 import services.ChatService;
 import utils.DatabaseUtils;
 import utils.ServiceUtils;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,8 +33,6 @@ public class ChatActor extends AbstractActor {
     private ActorRef out;
     private Executor context;
 
-    private Set<String> users = new HashSet<>();
-
     public static Props props(ActorRef out, String roomId, User user, ChatService chatService, Executor context) {
         return Props.create(ChatActor.class, () -> new ChatActor(out, roomId, user, chatService, context));
     }
@@ -46,6 +45,7 @@ public class ChatActor extends AbstractActor {
         this.context = context;
 
         mediator.tell(new DistributedPubSubMediator.Subscribe(roomId, getSelf()), getSelf());
+        Set<String> users = new HashSet<>();
         users.add(user.getId().toString());
         initialise();
     }
@@ -98,7 +98,7 @@ public class ChatActor extends AbstractActor {
                 out.tell("Unaccepted message :( should be object", getSelf());
                 throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "bad_request"));
             }
-        }, context).thenCompose((ChatMessage) -> chatService.save(ChatMessage))
+        }, context).thenCompose((ChatMessage) -> chatService.save(ChatMessage,context))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenCompose((json) -> {
                     out.tell(json.toString(), getSelf());
