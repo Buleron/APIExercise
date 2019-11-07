@@ -19,8 +19,10 @@ import play.mvc.WebSocket;
 import services.ChatService;
 import utils.DatabaseUtils;
 import utils.ServiceUtils;
+
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
+
 import static play.mvc.Results.forbidden;
 
 public class ChatController {
@@ -54,9 +56,8 @@ public class ChatController {
     }
 
     public CompletableFuture<Result> sortMessages(Http.RequestHeader reqHeader, String roomId, String search, int limit, int skip, String until) {
-        User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
         return CompletableFuture.supplyAsync(() -> new ChatService(database, jwtValidator)
-                .findByUsersIdRoomIdPagination(ec.current(), roomId,authUser.getId().toString(), search , limit, skip, until))
+                .findByUsersIdRoomIdPagination(ec.current(), roomId, reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER).getId().toString(), search, limit, skip, until))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));

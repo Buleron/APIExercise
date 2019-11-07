@@ -4,16 +4,18 @@
 # Map static resources from the /public folder to the /assets URL path
 ### NoDocs ###
 + paKontroll
-GET        /assets/*file                 controllers.Assets.versioned(path="/public", file: Asset)
+GET        /assets/*file                   controllers.Assets.versioned(path="/public", file: Asset)
 
 ### NoDocs ###
 + paKontroll
-GET        /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
+GET        /docs/swagger-ui/*file          controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
 + nocsrf
 + paKontroll
 POST        /api/authenticate/             controllers.HomeController.authenticate(request: Request)
 + paKontroll
 GET        /api/chat/:roomId/:token        controllers.ChatController.socket(roomId:String,token:String)
+
+GET        /api/scheduler/task/               controllers.SchedulerController.scheduler()
 
 GET        /api/chat/                      controllers.ChatController.sortMessages(request: Request, roomId: String ?= "", search: String ?= "", limit: Int ?= 0, skip: Int ?= 0, until: String ?= "")
 
