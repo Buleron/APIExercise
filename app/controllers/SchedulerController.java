@@ -1,5 +1,6 @@
 package controllers;
 
+import actor.MyActorTask;
 import actor.SchedulerActor;
 import akka.actor.ActorSystem;
 import akka.cluster.Cluster;
@@ -29,15 +30,24 @@ public class SchedulerController {
 
     public CompletableFuture<Result> scheduler() {
         return CompletableFuture.supplyAsync(this::test)
+                .thenCompose(item -> this.andAnotherOne())
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
+
     public CompletableFuture<F.Either<Object, Flow<Object, Object, ?>>> test() {
         Cluster cluster = Cluster.get(system);
         return CompletableFuture
                 .completedFuture(F.Either.Right(ActorFlow.actorRef((out) -> SchedulerActor.props(out,system, ec.current()),
+                        cluster.system(), materializer)));
+    }
+
+    private CompletableFuture<F.Either<Object, Flow<Object, Object, ?>>> andAnotherOne() {
+        Cluster cluster = Cluster.get(system);
+        return CompletableFuture
+                .completedFuture(F.Either.Right(ActorFlow.actorRef((out) -> MyActorTask.props(out,system, ec.current()),
                         cluster.system(), materializer)));
     }
 

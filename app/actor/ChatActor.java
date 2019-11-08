@@ -1,8 +1,6 @@
 package actor;
 
-import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import akka.actor.Props;
+import akka.actor.*;
 import akka.cluster.pubsub.DistributedPubSub;
 import akka.cluster.pubsub.DistributedPubSubMediator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,7 +14,6 @@ import play.mvc.Http;
 import services.ChatService;
 import utils.DatabaseUtils;
 import utils.ServiceUtils;
-
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -85,6 +82,12 @@ public class ChatActor extends AbstractActor {
             out.tell(SocketMessageTypes.PONG.name(), getSelf());
             return;
         }
+        if (message.contains("shutdown")) {
+            out.tell(PoisonPill.getInstance(), getSelf());
+            getContext().stop(getSelf());
+            return;
+        }
+
         CompletableFuture.supplyAsync(() -> {
             try {
                 ObjectMapper mapper = new ObjectMapper();
@@ -98,13 +101,12 @@ public class ChatActor extends AbstractActor {
                 out.tell("Unaccepted message :( should be object", getSelf());
                 throw new CompletionException(new RequestException(Http.Status.BAD_REQUEST, "bad_request"));
             }
-        }, context).thenCompose((ChatMessage) -> chatService.save(ChatMessage,context))
+        }, context).thenCompose((ChatMessage) -> chatService.save(ChatMessage, context))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenCompose((json) -> {
                     out.tell(json.toString(), getSelf());
                     return CompletableFuture.completedFuture(json);
                 });
     }
-
 
 }

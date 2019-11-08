@@ -7,6 +7,7 @@ public class TasksModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(MyActorTask.class).asEagerSingleton();
+        //running on start
+      //  bind(MyActorTask.class).asEagerSingleton();
     }
 }
