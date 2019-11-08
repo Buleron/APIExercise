@@ -37,11 +37,9 @@ public class MyActorTask extends AbstractActor {
                 .scheduler()
                 .schedule(
                         Duration.create(0, TimeUnit.SECONDS), // initialDelay
-                        Duration.create(30, TimeUnit.SECONDS), // interval
-                        someActor,
-                        "tick", // message,
-                        (ExecutionContext) executor,
-                        ActorRef.noSender());
+                        Duration.create(3, TimeUnit.SECONDS), // interval
+                        () -> System.out.println("Running another actor"),
+                        (ExecutionContext) executor);
     }
 
     @Override

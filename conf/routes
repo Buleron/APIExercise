@@ -5,7 +5,9 @@
 ### NoDocs ###
 + paKontroll
 GET        /assets/*file                   controllers.Assets.versioned(path="/public", file: Asset)
-
++ nocsrf
++ paKontroll
+POST        /api/upload/                   controllers.HomeController.upload(request: Request)
 ### NoDocs ###
 + paKontroll
 GET        /docs/swagger-ui/*file          controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
@@ -15,7 +17,7 @@ POST        /api/authenticate/             controllers.HomeController.authentica
 + paKontroll
 GET        /api/chat/:roomId/:token        controllers.ChatController.socket(roomId:String,token:String)
 
-GET        /api/scheduler/task/               controllers.SchedulerController.scheduler()
+GET        /api/scheduler/task/            controllers.SchedulerController.scheduler()
 
 GET        /api/chat/                      controllers.ChatController.sortMessages(request: Request, roomId: String ?= "", search: String ?= "", limit: Int ?= 0, skip: Int ?= 0, until: String ?= "")
 
