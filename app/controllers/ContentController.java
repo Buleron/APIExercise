@@ -23,17 +23,17 @@ public class ContentController {
     @Inject
     ContentService service;
 
-    public CompletableFuture<Result> all(Http.RequestHeader reqHeader) {
+    public CompletableFuture<Result> all(String did, Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> service.all(authUser))
+        return CompletableFuture.supplyAsync(() -> service.all(did, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
     }
 
-    public CompletableFuture<Result> findById(String id, Http.RequestHeader reqHeader) {
+    public CompletableFuture<Result> findById(String did, String id, Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> service.findById(id, authUser))
+        return CompletableFuture.supplyAsync(() -> service.findById(did, id, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> {

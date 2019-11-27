@@ -4,22 +4,22 @@
 # Map static resources from the /public folder to the /assets URL path
 ### NoDocs ###
 + paKontroll
-GET        /assets/*file                 controllers.Assets.versioned(path="/public", file: Asset)
+GET        /assets/*file                          controllers.Assets.versioned(path="/public", file: Asset)
 
 ### NoDocs ###
 + paKontroll
-GET        /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
+GET        /docs/swagger-ui/*file                 controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
 + nocsrf
 + paKontroll
-POST        /api/authenticate/             controllers.HomeController.authenticate(request: Request)
+POST        /api/authenticate/                    controllers.HomeController.authenticate(request: Request)
 + paKontroll
-GET        /api/chat/:roomId/:token        controllers.ChatController.socket(roomId:String,token:String)
+GET        /api/chat/:roomId/:token               controllers.ChatController.socket(roomId:String,token:String)
 
-GET        /api/chat/                      controllers.ChatController.sortMessages(request: Request, roomId: String ?= "", search: String ?= "", limit: Int ?= 0, skip: Int ?= 0, until: String ?= "")
+GET        /api/chat/                             controllers.ChatController.sortMessages(request: Request, roomId: String ?= "", search: String ?= "", limit: Int ?= 0, skip: Int ?= 0, until: String ?= "")
 
-GET        /api/dashboard/                 controllers.DashboardControllers.all(request: Request)
+GET        /api/dashboard/                        controllers.DashboardControllers.all(request: Request)
 
-GET        /api/dashboard/:id              controllers.DashboardControllers.findById(id: String,request: Request)
+GET        /api/dashboard/:id                     controllers.DashboardControllers.findById(id: String,request: Request)
  ###
  #  summary: Dashboard
  #  responses:
@@ -29,28 +29,28 @@ GET        /api/dashboard/:id              controllers.DashboardControllers.find
  #        $ref: '#/definitions/io.Dashboard'
  ###
 + nocsrf
-POST        /api/dashboard/                controllers.DashboardControllers.save(request: Request)
+POST        /api/dashboard/                       controllers.DashboardControllers.save(request: Request)
 + nocsrf
-PUT        /api/dashboard/                 controllers.DashboardControllers.update(request: Request)
+PUT        /api/dashboard/                        controllers.DashboardControllers.update(request: Request)
 + nocsrf
-DELETE        /api/dashboard/:id           controllers.DashboardControllers.delete(id: String,request: Request)
+DELETE        /api/dashboard/:id                  controllers.DashboardControllers.delete(id: String,request: Request)
 
-GET        /api/content/                   controllers.ContentController.all(request: Request)
+GET        /api/dashboard/:did/content/           controllers.ContentController.all(did: String, request: Request)
 
-GET        /api/content/:id                controllers.ContentController.findById(id: String,request: Request)
+GET        /api/dashboard/:did/content/:id        controllers.ContentController.findById(did: String, id: String, request: Request)
 + nocsrf
-POST        /api/content/                  controllers.ContentController.save(request: Request)
+POST        /api/dashboard/content/               controllers.ContentController.save(request: Request)
 + nocsrf
-PUT        /api/content/                   controllers.ContentController.update(request: Request)
+PUT        /api/dashboard/content/                controllers.ContentController.update(request: Request)
 + nocsrf
-DELETE        /api/content/:id             controllers.ContentController.delete(id: String,request: Request)
+DELETE        /api/dashboard/content/:id          controllers.ContentController.delete(id: String,request: Request)
 
-GET        /api/users/                     controllers.UserController.allUsers(request: Request)
+GET        /api/users/                            controllers.UserController.allUsers(request: Request)
 
-GET        /api/users/:id                  controllers.UserController.findById(id: String)
+GET        /api/users/:id                         controllers.UserController.findById(id: String)
 + nocsrf
-POST        /api/users/                    controllers.UserController.save(request: Request)
+POST        /api/users/                           controllers.UserController.save(request: Request)
 + nocsrf
-PUT        /api/users/                     controllers.UserController.update(request: Request)
+PUT        /api/users/                            controllers.UserController.update(request: Request)
 + nocsrf
-DELETE        /api/users/:id               controllers.UserController.delete(id: String)
+DELETE        /api/users/:id                      controllers.UserController.delete(id: String)
