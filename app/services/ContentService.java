@@ -43,6 +43,8 @@ public class ContentService {
         MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(DashboardContent.class, AccessLevelType.READ);
         RelayCollection<DashboardContent> dashboardContentRelayCollection = new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).getRelay().getCollection();
         RelayFindIterable findIterable = dashboardContentRelayCollection.find().filter(Filters.eq("dashboardId", new ObjectId(did)));
+        if (findIterable.first() == null)
+            throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
         return CompletableFuture.completedFuture((List<DashboardContent>) findIterable.into(new ArrayList()));
     }
 
@@ -56,7 +58,7 @@ public class ContentService {
             RelayCollection<DashboardContent> dashboardContentRelayCollection = new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).getRelay().getCollection();
             RelayFindIterable findIterable = dashboardContentRelayCollection.find()
                     .filter(Filters.and(Filters.eq("_id", new ObjectId(x)), Filters.eq("dashboardId", new ObjectId(did))));
-            if (findIterable == null)
+            if (findIterable.first() == null)
                 throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
             return CompletableFuture.completedFuture((DashboardContent) findIterable.first());
         } catch (IllegalArgumentException | NullPointerException ex) {
