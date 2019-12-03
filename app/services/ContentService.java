@@ -39,13 +39,14 @@ public class ContentService {
     @Inject
     SingleThreadedExecutionContext singleThreadedExecutionContext;
 
-    public CompletableFuture<List<DashboardContent>> all(String did, User authUser) {
+    public CompletableFuture<DashboardContent> findByDashboardId(String did, User authUser) {
         MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(DashboardContent.class, AccessLevelType.READ);
         RelayCollection<DashboardContent> dashboardContentRelayCollection = new ContentDataAccess(mongoDB.getDatabase()).withMongoRelay(relay).getRelay().getCollection();
-        RelayFindIterable findIterable = dashboardContentRelayCollection.find().filter(Filters.eq("dashboardId", new ObjectId(did)));
-        if (findIterable.first() == null)
+        RelayFindIterable<DashboardContent, DashboardContent> findIterable = dashboardContentRelayCollection.find(DashboardContent.class).filter(Filters.eq("dashboardId", new ObjectId(did)));
+        DashboardContent found = findIterable.first();
+        if (found == null)
             throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
-        return CompletableFuture.completedFuture((List<DashboardContent>) findIterable.into(new ArrayList()));
+        return CompletableFuture.completedFuture(found);
     }
 
     public CompletableFuture<DashboardContent> findById(String did, String x, User authUser) {

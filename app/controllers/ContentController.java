@@ -23,9 +23,9 @@ public class ContentController {
     @Inject
     ContentService service;
 
-    public CompletableFuture<Result> all(String did, Http.RequestHeader reqHeader) {
+    public CompletableFuture<Result> findByDashboardId(String did, Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> service.all(did, authUser))
+        return CompletableFuture.supplyAsync(() -> service.findByDashboardId(did, authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));

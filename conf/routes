@@ -35,7 +35,7 @@ PUT        /api/dashboard/                        controllers.DashboardControlle
 + nocsrf
 DELETE        /api/dashboard/:id                  controllers.DashboardControllers.delete(id: String,request: Request)
 
-GET        /api/dashboard/:did/content/           controllers.ContentController.all(did: String, request: Request)
+GET        /api/dashboard/:did/content/           controllers.ContentController.findByDashboardId(did: String, request: Request)
 
 GET        /api/dashboard/:did/content/:id        controllers.ContentController.findById(did: String, id: String, request: Request)
 + nocsrf
