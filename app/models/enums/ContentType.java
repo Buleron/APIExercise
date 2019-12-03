@@ -4,5 +4,8 @@ public enum ContentType {
     TEXT,
     IMAGE,
     LINE,
-    EMAIL
+    EMAIL,
+    PIE,
+    BAR,
+    TREE
 }
