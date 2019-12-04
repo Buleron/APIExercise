@@ -12,9 +12,9 @@ import models.enums.ContentType;
         @JsonSubTypes.Type(value= TextContent.class, name = "TEXT"),
         @JsonSubTypes.Type(value= ImageContent.class, name = "IMAGE"),
         @JsonSubTypes.Type(value= LineContent.class, name = "LINE"),
-        @JsonSubTypes.Type(value= LineContent.class, name = "PIE"),
-        @JsonSubTypes.Type(value= LineContent.class, name = "BAR"),
-        @JsonSubTypes.Type(value= LineContent.class, name = "TREE")
+        @JsonSubTypes.Type(value= PieContent.class, name = "PIE"),
+        @JsonSubTypes.Type(value= BarContent.class, name = "BAR"),
+        @JsonSubTypes.Type(value= TreeContent.class, name = "TREE")
 })
 public interface IContent {
     ContentType type = ContentType.TEXT;
