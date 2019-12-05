@@ -1,8 +1,6 @@
 package utils;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -10,14 +8,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.exceptions.RequestException;
 import oauth2.PlatformAttributes;
 import org.bson.Document;
-import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
 import play.mvc.Http.Request;
 
-import javax.xml.ws.spi.http.HttpContext;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -126,16 +121,16 @@ public class ServiceUtils {
                 promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "invalid_parameters"));
                 return;
             }
-            promise.complete(DatabaseUtils.toDocument((ObjectNode) json));
+            promise.complete(DatabaseUtils.toDocument((ObjectNode) escapeXSS(json)));
         }, context);
         return promise;
     }
 
-    public static <T> CompletableFuture<T> parseBodyOfType(Http.RequestBody request,Executor ex, Class<T> valueType) {
+    public static <T> CompletableFuture<T> parseBodyOfType(Http.RequestBody request, Executor ex, Class<T> valueType) {
         CompletableFuture<T> promise = new CompletableFuture<T>();
         CompletableFuture.runAsync(() -> {
             try {
-                promise.complete(DatabaseUtils.jsonToJavaClass(request.asJson(), valueType));
+                promise.complete(DatabaseUtils.jsonToJavaClass(escapeXSS(request.asJson()), valueType));
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -155,7 +150,7 @@ public class ServiceUtils {
                 promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "invalid_parameters"));
                 return;
             }
-            promise.complete(DatabaseUtils.toListDocument((ArrayNode) json));
+            promise.complete(DatabaseUtils.toListDocument((ArrayNode) escapeXSS(json)));
         }, context);
         return promise;
     }
@@ -171,7 +166,7 @@ public class ServiceUtils {
                     return;
                 }
                 for (JsonNode node : json) {
-                    items.add(DatabaseUtils.jsonToJavaClass(node, type));
+                    items.add(DatabaseUtils.jsonToJavaClass(escapeXSS(node), type));
                 }
                 promise.complete(items);
             } catch (IOException e) {
@@ -196,7 +191,50 @@ public class ServiceUtils {
     }
 
     public static String extractToken(Request request) {
-       return request.attrs().get(PlatformAttributes.VERIFIED_JWT);
+        return request.attrs().get(PlatformAttributes.VERIFIED_JWT);
+    }
+
+    private static JsonNode escapeXSS(JsonNode inputString) {
+        Map<String, String> articleMapOne = new HashMap<>();
+        Iterator<String> fieldNames = inputString.fieldNames();
+
+        while (fieldNames.hasNext()) {
+            String fieldName = fieldNames.next();
+            JsonNode field = inputString.get(fieldName);
+            String clearer = escapeXSS(field.asText());
+            articleMapOne.put(fieldName, clearer);
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.valueToTree(articleMapOne);
+    }
+
+    public static String escapeXSS(String inputString) {
+        StringBuilder builder = new StringBuilder();
+        char[] charArray = inputString.toCharArray();
+        for (char nextChar : charArray) {
+            String entityName = charMap.get((int) nextChar);
+            if (entityName == null) {
+                if (nextChar > 0x7F)
+                    builder.append("&#")
+                            .append(Integer.toString(nextChar, 10))
+                            .append(";");
+                else
+                    builder.append(nextChar);
+            } else
+                builder.append(entityName);
+        }
+        return builder.toString();
+    }
+
+    private static final HashMap<Integer, String> charMap = new HashMap<>();
+
+    static {
+        charMap.put(34, "&quot;");    // double quote
+        charMap.put(35, "&#35;");     // hash mark (no HTML named entity)
+        charMap.put(38, "&amp;");     // ampersand
+        charMap.put(39, "&apos;");    // apostrophe, aka single quote
+        charMap.put(60, "&lt;");      // less than
+        charMap.put(62, "&gt;");      // greater than
     }
 
 }
