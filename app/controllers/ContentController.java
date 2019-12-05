@@ -25,7 +25,7 @@ public class ContentController {
 
     public CompletableFuture<Result> findByDashboardId(String did, Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> service.findByDashboardId(did, authUser))
+        return CompletableFuture.supplyAsync(() -> service.findByDashboardId(ServiceUtils.escapeXSS(did), authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
@@ -33,7 +33,7 @@ public class ContentController {
 
     public CompletableFuture<Result> findById(String did, String id, Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> service.findById(did, id, authUser))
+        return CompletableFuture.supplyAsync(() -> service.findById(ServiceUtils.escapeXSS(did), ServiceUtils.escapeXSS(id), authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> {
@@ -62,7 +62,7 @@ public class ContentController {
 
     public CompletableFuture<Result> delete(String id,Http.RequestHeader reqHeader) {
         User authUser = reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER);
-        return CompletableFuture.supplyAsync(() -> service.delete(id, authUser))
+        return CompletableFuture.supplyAsync(() -> service.delete(ServiceUtils.escapeXSS(id), authUser))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
