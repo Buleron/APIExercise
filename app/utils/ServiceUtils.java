@@ -25,7 +25,7 @@ public class ServiceUtils {
         CompletableFuture<JsonNode> promise = new CompletableFuture<>();
         CompletableFuture.runAsync(() -> {
             try {
-                promise.complete(escapeHtml(DatabaseUtils.toJsonNode(result)));
+                promise.complete(DatabaseUtils.toJsonNode(result));
             } catch (Exception ex) {
                 ex.printStackTrace();
                 promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "parsing_exception"));
@@ -49,7 +49,7 @@ public class ServiceUtils {
                 if (node == null) {
                     promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "parsing_exception"));
                 } else {
-                    promise.complete(escapeHtml(node));
+                    promise.complete(node);
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -78,7 +78,7 @@ public class ServiceUtils {
                 if (node == null) {
                     promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "parsing_exception"));
                 } else {
-                    promise.complete(escapeHtml(node));
+                    promise.complete(node);
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -101,7 +101,7 @@ public class ServiceUtils {
                 if (node == null) {
                     promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "parsing_exception"));
                 } else {
-                    promise.complete(escapeHtml(node));
+                    promise.complete(node);
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -121,7 +121,7 @@ public class ServiceUtils {
                 promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "invalid_parameters"));
                 return;
             }
-            promise.complete(DatabaseUtils.toDocument((ObjectNode) escapeHtml(json)));
+            promise.complete(DatabaseUtils.toDocument((ObjectNode) escapeXSS(json)));
         }, context);
         return promise;
     }
@@ -130,7 +130,7 @@ public class ServiceUtils {
         CompletableFuture<T> promise = new CompletableFuture<T>();
         CompletableFuture.runAsync(() -> {
             try {
-                promise.complete(DatabaseUtils.jsonToJavaClass(escapeHtml(request.asJson()), valueType));
+                promise.complete(DatabaseUtils.jsonToJavaClass(escapeXSS(request.asJson()), valueType));
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -150,7 +150,7 @@ public class ServiceUtils {
                 promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "invalid_parameters"));
                 return;
             }
-            promise.complete(DatabaseUtils.toListDocument((ArrayNode) escapeHtml(json)));
+            promise.complete(DatabaseUtils.toListDocument((ArrayNode) escapeXSS(json)));
         }, context);
         return promise;
     }
@@ -166,7 +166,7 @@ public class ServiceUtils {
                     return;
                 }
                 for (JsonNode node : json) {
-                    items.add(DatabaseUtils.jsonToJavaClass(escapeHtml(node), type));
+                    items.add(DatabaseUtils.jsonToJavaClass(escapeXSS(node), type));
                 }
                 promise.complete(items);
             } catch (IOException e) {
@@ -194,22 +194,21 @@ public class ServiceUtils {
         return request.attrs().get(PlatformAttributes.VERIFIED_JWT);
     }
 
-    private static JsonNode escapeHtml(JsonNode inputString) {
+    private static JsonNode escapeXSS(JsonNode inputString) {
         Map<String, String> articleMapOne = new HashMap<>();
         Iterator<String> fieldNames = inputString.fieldNames();
 
         while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
             JsonNode field = inputString.get(fieldName);
-            String clearer = escapeHtml(field.asText());
+            String clearer = escapeXSS(field.asText());
             articleMapOne.put(fieldName, clearer);
         }
-        System.out.println(articleMapOne);
         ObjectMapper mapper = new ObjectMapper();
         return mapper.valueToTree(articleMapOne);
     }
 
-    private static String escapeHtml(String inputString) {
+    public static String escapeXSS(String inputString) {
         StringBuilder builder = new StringBuilder();
         char[] charArray = inputString.toCharArray();
         for (char nextChar : charArray) {
