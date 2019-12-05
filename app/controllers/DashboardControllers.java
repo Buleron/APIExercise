@@ -31,7 +31,7 @@ public class DashboardControllers {
     }
 
     public CompletableFuture<Result> findById(String id, Http.RequestHeader reqHeader) {
-        return CompletableFuture.supplyAsync(() -> service.findById(id, reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
+        return CompletableFuture.supplyAsync(() -> service.findById(ServiceUtils.escapeXSS(id), reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
@@ -55,7 +55,7 @@ public class DashboardControllers {
     }
 
     public CompletableFuture<Result> delete(String id, Http.RequestHeader reqHeader) {
-        return CompletableFuture.supplyAsync(() -> service.delete(id, reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
+        return CompletableFuture.supplyAsync(() -> service.delete(ServiceUtils.escapeXSS(id), reqHeader.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
