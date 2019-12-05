@@ -121,7 +121,11 @@ public class ServiceUtils {
                 promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "invalid_parameters"));
                 return;
             }
-            promise.complete(DatabaseUtils.toDocument((ObjectNode) escapeXSS(json)));
+            try {
+                promise.complete(DatabaseUtils.toDocument((ObjectNode) escapeXSS(json)));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }, context);
         return promise;
     }
@@ -150,7 +154,11 @@ public class ServiceUtils {
                 promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "invalid_parameters"));
                 return;
             }
-            promise.complete(DatabaseUtils.toListDocument((ArrayNode) escapeXSS(json)));
+            try {
+                promise.complete(DatabaseUtils.toListDocument((ArrayNode) escapeXSS(json)));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }, context);
         return promise;
     }
@@ -194,20 +202,6 @@ public class ServiceUtils {
         return request.attrs().get(PlatformAttributes.VERIFIED_JWT);
     }
 
-    private static JsonNode escapeXSS(JsonNode inputString) {
-        Map<String, String> articleMapOne = new HashMap<>();
-        Iterator<String> fieldNames = inputString.fieldNames();
-
-        while (fieldNames.hasNext()) {
-            String fieldName = fieldNames.next();
-            JsonNode field = inputString.get(fieldName);
-            String clearer = escapeXSS(field.asText());
-            articleMapOne.put(fieldName, clearer);
-        }
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.valueToTree(articleMapOne);
-    }
-
     public static String escapeXSS(String inputString) {
         StringBuilder builder = new StringBuilder();
         char[] charArray = inputString.toCharArray();
@@ -226,10 +220,29 @@ public class ServiceUtils {
         return builder.toString();
     }
 
+    public static JsonNode escapeXSS(JsonNode inputString) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        char[] charArray = inputString.toString().toCharArray();
+        for (char nextChar : charArray) {
+            String entityName = charMap.get((int) nextChar);
+            if (entityName == null) {
+                if (nextChar > 0x7F)
+                    builder.append("&#")
+                            .append(Integer.toString(nextChar, 10))
+                            .append(";");
+                else
+                    builder.append(nextChar);
+            } else
+                builder.append(entityName);
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(builder.toString());
+    }
+
     private static final HashMap<Integer, String> charMap = new HashMap<>();
 
     static {
-        charMap.put(34, "&quot;");    // double quote
+       // charMap.put(34, "&quot;");    // double quote
         charMap.put(35, "&#35;");     // hash mark (no HTML named entity)
         charMap.put(38, "&amp;");     // ampersand
         charMap.put(39, "&apos;");    // apostrophe, aka single quote
