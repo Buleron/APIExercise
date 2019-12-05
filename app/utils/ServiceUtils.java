@@ -121,7 +121,7 @@ public class ServiceUtils {
                 promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "invalid_parameters"));
                 return;
             }
-            promise.complete(DatabaseUtils.toDocument((ObjectNode) escapeXSS(json)));
+            promise.complete(DatabaseUtils.toDocument((ObjectNode) json));
         }, context);
         return promise;
     }
@@ -130,7 +130,7 @@ public class ServiceUtils {
         CompletableFuture<T> promise = new CompletableFuture<T>();
         CompletableFuture.runAsync(() -> {
             try {
-                promise.complete(DatabaseUtils.jsonToJavaClass(escapeXSS(request.asJson()), valueType));
+                promise.complete(DatabaseUtils.jsonToJavaClass(request.asJson(), valueType));
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -150,7 +150,7 @@ public class ServiceUtils {
                 promise.completeExceptionally(new RequestException(Http.Status.BAD_REQUEST, "invalid_parameters"));
                 return;
             }
-            promise.complete(DatabaseUtils.toListDocument((ArrayNode) escapeXSS(json)));
+            promise.complete(DatabaseUtils.toListDocument((ArrayNode) json));
         }, context);
         return promise;
     }
@@ -166,7 +166,7 @@ public class ServiceUtils {
                     return;
                 }
                 for (JsonNode node : json) {
-                    items.add(DatabaseUtils.jsonToJavaClass(escapeXSS(node), type));
+                    items.add(DatabaseUtils.jsonToJavaClass(node, type));
                 }
                 promise.complete(items);
             } catch (IOException e) {
