@@ -52,6 +52,9 @@ public class MongoDB {
         ClassModel<EmailContent> emailContentClassModel = ClassModel.builder(EmailContent.class).enableDiscriminator(true).build();
         ClassModel<ImageContent> imageContentClassModel = ClassModel.builder(ImageContent.class).enableDiscriminator(true).build();
         ClassModel<LineContent> lineContentClassModel = ClassModel.builder(LineContent.class).enableDiscriminator(true).build();
+        ClassModel<PieContent> pieContentClassModel = ClassModel.builder(PieContent.class).enableDiscriminator(true).build();
+        ClassModel<TreeContent> treeContentClassModel = ClassModel.builder(TreeContent.class).enableDiscriminator(true).build();
+        ClassModel<BarContent> barContentClassModel = ClassModel.builder(BarContent.class).enableDiscriminator(true).build();
         ClassModel<TextContent> textContentClassModel = ClassModel.builder(TextContent.class).enableDiscriminator(true).build();
         ClassModel<ChatMessage> chatMessageClassModel = ClassModel.builder(ChatMessage.class).enableDiscriminator(true).build();
 
@@ -64,6 +67,7 @@ public class MongoDB {
                         .register(baseContentClassModel, emailContentClassModel, imageContentClassModel, lineContentClassModel, textContentClassModel,chatMessageClassModel)
                         // and also register class model if codec error;
                         .register(chatMessage, content)
+                        .register(pieContentClassModel,treeContentClassModel,barContentClassModel)
                         .automatic(true).build();
 
 

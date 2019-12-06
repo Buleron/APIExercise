@@ -11,5 +11,9 @@ import java.util.List;
 @BsonDiscriminator(key = "type", value = "LINE")
 public class LineContent extends BaseContent {
     ContentType type = ContentType.LINE;
+     int x;
+     int y;
+     int width;
+     int height;
     List<DataContent> data = new ArrayList<>();
 }
