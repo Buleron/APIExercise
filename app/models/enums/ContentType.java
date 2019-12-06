@@ -7,5 +7,5 @@ public enum ContentType {
     EMAIL,
     PIE,
     BAR,
-    TREE
+    TREEMAP
 }
