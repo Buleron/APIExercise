@@ -7,8 +7,11 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.util.JSON;
+import models.collection.content.*;
+import models.enums.ContentType;
 import mongo.MongoDB;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import play.Application;
@@ -18,6 +21,8 @@ import play.mvc.Result;
 import play.test.Helpers;
 import play.twirl.api.Content;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static play.mvc.Http.Status.OK;
@@ -31,28 +36,44 @@ public class Helper {
 
     public static ObjectNode contentBuilder() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        String dataContent = "{\n" +
-                "  \"dashboardId\": \"5db83b638f1ed921046a6deb\",\n" +
-                "  \"content\": [{\n" +
-                "    \"text\": \"FromTets\",\n" +
-                "    \"subject\": \"Test purposes\",\n" +
-                "    \"email\": \"test@tests.test\",\n" +
-                "    \"type\": \"EMAIL\"\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"type\": \"TEXT\",\n" +
-                "    \"text\": \"these data are tests only\"\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"type\": \"IMAGE\",\n" +
-                "    \"url\": \"www.googl.com/updateFromTests\"\n" +
-                "  },\n" +
-                "  {\n" +
-                "    \"type\": \"LINE\",\n" +
-                "    \"data\": [{\"category\": \"yo\", \"value\": 23}, {\"category\": \"yo2\", \"value\": 23}, {\"category\": \"yo3\", \"value\": 23}]\n" +
-                "  }]\n" +
-                "}";
-        return (ObjectNode) mapper.readValue(dataContent, JsonNode.class);
+        DashboardContent dashboardContent = new DashboardContent();
+        dashboardContent.setDashboardId(new ObjectId("5db83b638f1ed921046a6deb"));
+        // Email
+        EmailContent emailContent = new EmailContent();
+        emailContent.setEmail("buleroni22@gmail.com");
+        emailContent.setSubject("test");
+        emailContent.setText("hello");
+        emailContent.setType(ContentType.EMAIL);
+        // Image
+        ImageContent imageContent = new ImageContent();
+        imageContent.setUrl("www.google.com/updateFromTests");
+        // Text
+        TextContent textContent = new TextContent();
+        textContent.setText("This is just test purposes");
+        // Content
+        LineContent lineContent = new LineContent();
+
+        DataContent dataContent1 = new DataContent();
+        dataContent1.setName("yo2");
+        dataContent1.setValue(23);
+
+        DataContent dataContent = new DataContent();
+        dataContent.setName("yo2");
+        dataContent.setValue(23);
+
+        List<DataContent> dataContentList = new ArrayList<>();
+        dataContentList.add(dataContent);
+        dataContentList.add(dataContent1);
+
+        lineContent.setData(dataContentList);
+        List<BaseContent> baseContentList = new ArrayList<>();
+        baseContentList.add(emailContent);
+        baseContentList.add(imageContent);
+        baseContentList.add(lineContent);
+        baseContentList.add(textContent);
+        dashboardContent.setContent(baseContentList);
+
+        return mapper.valueToTree(dashboardContent);
     }
 
     //also check for role cases;

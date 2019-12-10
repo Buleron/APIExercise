@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.MongoCollection;
-import models.collection.content.BaseContent;
 import models.collection.content.DashboardContent;
 import mongo.MongoDB;
 import org.bson.Document;
@@ -26,17 +25,21 @@ import static utils.Constants.*;
 
 public class ContentControllerTest {
 
-    private static String AuthURL = "/content/";
+    private static String AuthURL = "/dashboard/content/";
     private static String BEARER_Token = null;
     private static final String WrongToken = BEARER + "asdasdeyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiNWRhZGEwM2VlZTVjZDkwYjljN2NjOTM2IiwiaXNzIjoiZXhjZXJjaXNlQXBpIiwiZXhwIjoxODg3OTczNDM5fQ.hnS0cK8hksdl";
     private static Application app;
     private static MongoDB mongoDB;
+    private static ObjectNode JsonNodeDataContent;
+    private static DashboardContent dashboardContentHeader;
+
 
     @BeforeClass
-    public static void startPlay() {
-        app = Helpers.fakeApplication();
+    public static void startPlay() throws IOException {
+        app = Helpers.fakeApplication(Helpers.inMemoryDatabase());
         Helpers.start(app);
         BEARER_Token = Helper.authUser(app);
+        JsonNodeDataContent = Helper.contentBuilder();
         mongoDB = app.injector().instanceOf(MongoDB.class);
     }
 
@@ -51,12 +54,12 @@ public class ContentControllerTest {
     @Test
     public void createContentOK() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        ObjectNode JsonNodeDataContent = Helper.contentBuilder();
         Http.RequestBuilder request = Helper.buildRequest(POST, BEARER_Token, JsonNodeDataContent, AuthURL);
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         JsonNode actualObj = mapper.readValue(resultStr, JsonNode.class);
         DashboardContent dashboardContent = DatabaseUtils.jsonToJavaClass(actualObj, DashboardContent.class);
+        dashboardContentHeader = dashboardContent;
         System.out.println(dashboardContent);
         assertEquals(OK, result.status());
 
@@ -147,7 +150,7 @@ public class ContentControllerTest {
     public void getContentByIdOK() {
         MongoCollection<DashboardContent> content = mongoDB.getDatabase().getCollection(CONTENT, DashboardContent.class);
         DashboardContent doc = content.find().first();
-        Http.RequestBuilder request = Helper.buildRequest(GET, BEARER_Token, AuthURL + doc.getId().toString());
+        Http.RequestBuilder request = Helper.buildRequest(GET, BEARER_Token, "/dashboard/"+doc.getDashboardId().toString()+"/content/" + doc.getId().toString());
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);
@@ -156,7 +159,7 @@ public class ContentControllerTest {
 
     @Test
     public void ContentGetAllOK() {
-        Http.RequestBuilder request = Helper.buildRequest(GET, BEARER_Token, AuthURL);
+        Http.RequestBuilder request = Helper.buildRequest(GET, BEARER_Token, "/dashboard/"+dashboardContentHeader.getDashboardId().toString()+"/content/");
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);
@@ -204,9 +207,7 @@ public class ContentControllerTest {
 
     @Test
     public void deleteContentResultOK() {
-        MongoCollection<DashboardContent> content = mongoDB.getDatabase().getCollection(CONTENT, DashboardContent.class);
-        DashboardContent doc = content.find().first();
-        Http.RequestBuilder request = Helper.buildRequest(DELETE, BEARER_Token, AuthURL + doc.getId().toString());
+        Http.RequestBuilder request = Helper.buildRequest(DELETE, BEARER_Token, AuthURL + dashboardContentHeader.getId().toString());
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         System.out.println(resultStr);
