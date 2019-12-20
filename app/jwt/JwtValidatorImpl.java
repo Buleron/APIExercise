@@ -39,15 +39,16 @@ import java.io.UnsupportedEncodingException;
 
 @Singleton
 public class JwtValidatorImpl implements JwtValidator {
+    private String secret;
     private JWTVerifier verifier;
 
     @Inject
     public JwtValidatorImpl(Config config) throws UnsupportedEncodingException {
-        String secret = "changeme";
+        this.secret = config.getString("play.http.secret.key");
 
         Algorithm algorithm = Algorithm.HMAC256(secret);
         verifier = JWT.require(algorithm)
-                .withIssuer("excerciseApi")
+                .withIssuer(config.getString("play.http.secret.issuer"))
                 .build();
     }
 

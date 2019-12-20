@@ -3,6 +3,7 @@ package services;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.typesafe.config.Config;
 import lombok.AllArgsConstructor;
 import models.collection.User;
 import models.collection.UserToken;
@@ -23,6 +24,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 @AllArgsConstructor
 public class HomeService {
     private MongoDatabase database;
+    private Config config;
 
     public CompletableFuture<Document> auth(User user, Executor context) {
         return CompletableFuture.supplyAsync(() -> {
@@ -53,10 +55,9 @@ public class HomeService {
     }
 
     private String getSignedToken(String userId) throws UnsupportedEncodingException {
-        String secret = "changeme";
-        Algorithm algorithm = Algorithm.HMAC256(secret);
+        Algorithm algorithm = Algorithm.HMAC256(config.getString("play.http.secret.key"));
         return JWT.create()
-                .withIssuer("excerciseApi")
+                .withIssuer(config.getString("play.http.secret.issuer"))
                 .withClaim("user_id", userId)
                 .withExpiresAt(Date.from(ZonedDateTime.now(ZoneId.systemDefault()).plusYears(10).toInstant()))
                 .sign(algorithm);

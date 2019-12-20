@@ -1,5 +1,6 @@
 package controllers;
 
+import com.typesafe.config.Config;
 import models.collection.User;
 import mongo.MongoDB;
 import play.i18n.MessagesApi;
@@ -26,10 +27,12 @@ public class HomeController extends Controller {
     MessagesApi messagesApi;
     @Inject
     HttpExecutionContext context;
+    @Inject
+    private Config config;
 
     public CompletableFuture<Result> authenticate(Http.Request request) {
         return ServiceUtils.parseBodyOfType(request.body(), context.current(), User.class)
-                .thenCompose((item) -> new HomeService(mongoDB.getDatabase()).auth(item, context.current()))
+                .thenCompose((item) -> new HomeService(mongoDB.getDatabase(), config).auth(item, context.current()))
                 .thenCompose(ServiceUtils::toJsonNode)
                 .thenApply(Results::ok)
                 .exceptionally((exception) -> DatabaseUtils.resultFromThrowable(exception, messagesApi));
