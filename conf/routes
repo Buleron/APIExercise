@@ -54,3 +54,11 @@ POST        /api/users/                           controllers.UserController.sav
 PUT        /api/users/                            controllers.UserController.update(request: Request)
 + nocsrf
 DELETE        /api/users/:id                      controllers.UserController.delete(id: String)
+
++ nocsrf
+### NoDocs ###
++ paKontroll
+GET        /api/anotheraction/                         controllers.ActionControllers.passArgIndex(request: Request)
+
++ nocsrf
+POST        /api/anotheraction/                         controllers.ActionControllers.anotherPassArgIndex(request: Request)
