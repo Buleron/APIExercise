@@ -1,7 +1,5 @@
 package services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import data.DashboardsDataAccess;
 import data.DataAccess;
 import models.collection.Dashboard;
@@ -10,12 +8,15 @@ import models.enums.AccessLevelType;
 import models.exceptions.RequestException;
 import mongo.MongoDB;
 import mongolay.MongoRelay;
+import oauth2.Authenticated;
 import oauth2.PlatformAttributes;
 import org.bson.types.ObjectId;
+import play.i18n.MessagesApi;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
 import play.mvc.Result;
 import utils.DatabaseUtils;
+import utils.ServiceUtils;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -29,40 +30,49 @@ import java.util.concurrent.CompletionStage;
 import static utils.Constants.NOT_FOUND;
 
 
+@Authenticated
 public class PassArgActionService extends play.mvc.Action.Simple {
-
     @Inject
     private MongoDB mongoDB;
     @Inject
     HttpExecutionContext context;
 
     public CompletionStage<Result> call(Http.Request req) {
-
-        Dashboard dashboard = new Dashboard();
-        ObjectMapper mapper = new ObjectMapper();
-
+        Dashboard dashboard;
         try {
             dashboard = DatabaseUtils.jsonToJavaClass(req.body().asJson(), Dashboard.class);
+            return results(req, dashboard).thenCompose(test ->
+                    delegate.call(test));
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return delegate.call(req);
+    }
 
-        if (req.method().equals("GET")) {
-            return delegate.call(req.addAttr(PlatformAttributes.DASHBOARDACTION, mapper.convertValue(all(req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)), JsonNode.class)));
-        }
-        if (req.method().equals("POST")) {
-            return delegate.call(req.addAttr(PlatformAttributes.DASHBOARDACTION, mapper.convertValue(save(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)), JsonNode.class)));
-        }
-        if (req.method().equals("PUT")) {
-            return delegate.call(req.addAttr(PlatformAttributes.DASHBOARDACTION, mapper.convertValue(update(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)), JsonNode.class)));
-        }
-        if (req.method().equals("DELETE")) {
-            return delegate.call(req.addAttr(PlatformAttributes.DASHBOARDACTION, mapper.convertValue(delete(dashboard.getId().toString(), req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)), JsonNode.class)));
+    public CompletableFuture<Http.Request> results(Http.Request req, Dashboard dashboard) {
+        switch (req.method()) {
+            case "GET":
+                return CompletableFuture.supplyAsync(() -> all(req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
+                        .thenCompose(ServiceUtils::toJsonNode)
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
+            case "POST":
+                return CompletableFuture.supplyAsync(() -> save(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
+                        .thenCompose(ServiceUtils::toJsonNode)
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
 
-        } else {
-            return delegate.call(req.addAttr(PlatformAttributes.DASHBOARDACTION, mapper.convertValue(dashboard, JsonNode.class)));
+            case "PUT":
+                return CompletableFuture.supplyAsync(() -> update(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
+                        .thenCompose(ServiceUtils::toJsonNode)
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
+            case "DELETE":
+                return CompletableFuture.supplyAsync(() -> delete(dashboard.getId().toString(), req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
+                        .thenCompose(ServiceUtils::toJsonNode)
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
+            default:
+                return null;
         }
     }
+
 
     public CompletableFuture<List<Dashboard>> all(User authUser) {
         MongoRelay relay = new MongoRelay(mongoDB.getDatabase(), authUser).withACL(Dashboard.class, AccessLevelType.READ);

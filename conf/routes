@@ -57,8 +57,8 @@ DELETE        /api/users/:id                      controllers.UserController.del
 
 + nocsrf
 ### NoDocs ###
-+ paKontroll
 GET        /api/anotheraction/                         controllers.ActionControllers.passArgIndex(request: Request)
 
 + nocsrf
++ paKontroll
 POST        /api/anotheraction/                         controllers.ActionControllers.anotherPassArgIndex(request: Request)

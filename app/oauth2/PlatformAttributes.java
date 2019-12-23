@@ -1,6 +1,7 @@
 package oauth2;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import models.collection.Dashboard;
 import models.collection.User;
 import play.libs.typedmap.TypedKey;
 
