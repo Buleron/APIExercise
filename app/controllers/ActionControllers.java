@@ -10,11 +10,7 @@ import static play.mvc.Results.ok;
 public class ActionControllers {
 
     @With(PassArgActionService.class)
-    public Result passArgIndex(Http.Request request) {
-        return ok(request.attrs().get(PlatformAttributes.DASHBOARDACTION));
-    }
-    @With(PassArgActionService.class)
-    public Result anotherPassArgIndex(Http.Request request) {
+    public Result playAction(Http.Request request) {
         return ok(request.attrs().get(PlatformAttributes.DASHBOARDACTION));
     }
 }

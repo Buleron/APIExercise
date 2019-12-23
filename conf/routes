@@ -56,9 +56,17 @@ PUT        /api/users/                            controllers.UserController.upd
 DELETE        /api/users/:id                      controllers.UserController.delete(id: String)
 
 + nocsrf
-### NoDocs ###
-GET        /api/anotheraction/                         controllers.ActionControllers.passArgIndex(request: Request)
++ meKontroll
+POST        /api/playAction/                   controllers.ActionControllers.playAction(request: Request)
 
 + nocsrf
-+ paKontroll
-POST        /api/anotheraction/                         controllers.ActionControllers.anotherPassArgIndex(request: Request)
++ meKontroll
+GET        /api/playAction/                    controllers.ActionControllers.playAction(request: Request)
+
++ nocsrf
++ meKontroll
+PUT        /api/playAction/                    controllers.ActionControllers.playAction(request: Request)
+
++ nocsrf
++ meKontroll
+DELETE        /api/playAction/                 controllers.ActionControllers.playAction(request: Request)

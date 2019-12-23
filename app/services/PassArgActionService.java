@@ -30,7 +30,7 @@ import java.util.concurrent.CompletionStage;
 import static utils.Constants.NOT_FOUND;
 
 
-@Authenticated
+@Authenticated()
 public class PassArgActionService extends play.mvc.Action.Simple {
     @Inject
     private MongoDB mongoDB;
@@ -59,7 +59,6 @@ public class PassArgActionService extends play.mvc.Action.Simple {
                 return CompletableFuture.supplyAsync(() -> save(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
-
             case "PUT":
                 return CompletableFuture.supplyAsync(() -> update(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
