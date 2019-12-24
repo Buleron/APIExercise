@@ -11,7 +11,6 @@ import mongolay.MongoRelay;
 import oauth2.Authenticated;
 import oauth2.PlatformAttributes;
 import org.bson.types.ObjectId;
-import play.i18n.MessagesApi;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -50,21 +49,25 @@ public class PassArgActionService extends play.mvc.Action.Simple {
     }
 
     public CompletableFuture<Http.Request> results(Http.Request req, Dashboard dashboard) {
-        switch (req.method()) {
-            case "GET":
+        switch (req.method()+req.path()) {
+            case "GET/api/playAction/all":
                 return CompletableFuture.supplyAsync(() -> all(req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
-            case "POST":
+            case "POST/api/playAction/":
                 return CompletableFuture.supplyAsync(() -> save(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
-            case "PUT":
+            case "PUT/api/playAction/":
                 return CompletableFuture.supplyAsync(() -> update(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
-            case "DELETE":
+            case "DELETE/api/playAction/":
                 return CompletableFuture.supplyAsync(() -> delete(dashboard.getId().toString(), req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
+                        .thenCompose(ServiceUtils::toJsonNode)
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
+            case "GET/api/playAction/byId":
+                return CompletableFuture.supplyAsync(() -> findById(dashboard.getId().toString(), req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
             default:
