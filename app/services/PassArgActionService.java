@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
-import static utils.Constants.NOT_FOUND;
+import static utils.Constants.*;
 
 
 @Authenticated()
@@ -40,8 +40,7 @@ public class PassArgActionService extends play.mvc.Action.Simple {
         Dashboard dashboard;
         try {
             dashboard = DatabaseUtils.jsonToJavaClass(req.body().asJson(), Dashboard.class);
-            return results(req, dashboard).thenCompose(test ->
-                    delegate.call(test));
+            return results(req, dashboard).thenCompose(test -> delegate.call(test));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -49,24 +48,24 @@ public class PassArgActionService extends play.mvc.Action.Simple {
     }
 
     public CompletableFuture<Http.Request> results(Http.Request req, Dashboard dashboard) {
-        switch (req.method()+req.path()) {
-            case "GET/api/playAction/all":
+        switch (req.method() + req.path()) {
+            case DASHBOARD_GETALL:
                 return CompletableFuture.supplyAsync(() -> all(req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
-            case "POST/api/playAction/":
+            case DASHBOARD_SAVE:
                 return CompletableFuture.supplyAsync(() -> save(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
-            case "PUT/api/playAction/":
+            case DASHBOARD_UPDATE:
                 return CompletableFuture.supplyAsync(() -> update(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
-            case "DELETE/api/playAction/":
+            case DASHBOARD_DELETE:
                 return CompletableFuture.supplyAsync(() -> delete(dashboard.getId().toString(), req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
-            case "GET/api/playAction/byId":
+            case DASHBOARD_GETBYID:
                 return CompletableFuture.supplyAsync(() -> findById(dashboard.getId().toString(), req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
                         .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
@@ -86,6 +85,8 @@ public class PassArgActionService extends play.mvc.Action.Simple {
                 .withACL(Dashboard.class, AccessLevelType.READ);
         try {
             DataAccess<Dashboard> dashboardDataAccess = new DashboardsDataAccess(mongoDB.getDatabase()).withMongoRelay(relay);
+            if (dashboardDataAccess.byId(new ObjectId(t)) == null)
+                throw new CompletionException(new RequestException(Http.Status.NOT_FOUND, NOT_FOUND));
             return dashboardDataAccess.byIdAsync(new ObjectId(t), context.current());
         } catch (IllegalArgumentException | NullPointerException ex) {
             ex.printStackTrace();

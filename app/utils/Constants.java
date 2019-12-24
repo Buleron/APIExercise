@@ -15,5 +15,9 @@ public class Constants {
     public static final String ACCESS_FORBIDDEN = "access_forbidden";
     public static final String AUTHORIZATION = "Authorization";
     public static final String NO_BEARER = "No bearer token type";
-
+    public static final String DASHBOARD_GETALL = "GET/api/playAction/all";
+    public static final String DASHBOARD_GETBYID = "GET/api/playAction/byId";
+    public static final String DASHBOARD_UPDATE = "PUT/api/playAction/";
+    public static final String DASHBOARD_SAVE = "POST/api/playAction/";
+    public static final String DASHBOARD_DELETE = "DELETE/api/playAction/";
 }
