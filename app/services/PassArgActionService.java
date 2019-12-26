@@ -11,6 +11,7 @@ import mongolay.MongoRelay;
 import oauth2.Authenticated;
 import oauth2.PlatformAttributes;
 import org.bson.types.ObjectId;
+import play.filters.csrf.CSRF;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -21,6 +22,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -50,25 +52,27 @@ public class PassArgActionService extends play.mvc.Action.Simple {
     public CompletableFuture<Http.Request> results(Http.Request req, Dashboard dashboard) {
         switch (req.method() + req.path()) {
             case DASHBOARD_GETALL:
+                Optional<CSRF.Token> CSRFToken = CSRF.getToken(req);
+                System.out.println(CSRFToken);
                 return CompletableFuture.supplyAsync(() -> all(req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
-                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDS, result));
             case DASHBOARD_SAVE:
                 return CompletableFuture.supplyAsync(() -> save(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
-                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDS, result));
             case DASHBOARD_UPDATE:
                 return CompletableFuture.supplyAsync(() -> update(dashboard, req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
-                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDS, result));
             case DASHBOARD_DELETE:
                 return CompletableFuture.supplyAsync(() -> delete(dashboard.getId().toString(), req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
-                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDS, result));
             case DASHBOARD_GETBYID:
                 return CompletableFuture.supplyAsync(() -> findById(dashboard.getId().toString(), req.attrs().get(PlatformAttributes.AUTHENTICATED_USER)))
                         .thenCompose(ServiceUtils::toJsonNode)
-                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDACTION, result));
+                        .thenApply(result -> req.addAttr(PlatformAttributes.DASHBOARDS, result));
             default:
                 return null;
         }

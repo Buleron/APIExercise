@@ -11,6 +11,6 @@ public class ActionControllers {
 
     @With(PassArgActionService.class)
     public Result playAction(Http.Request request) {
-        return ok(request.attrs().get(PlatformAttributes.DASHBOARDACTION));
+        return ok(request.attrs().get(PlatformAttributes.DASHBOARDS));
     }
 }

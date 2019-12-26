@@ -12,11 +12,9 @@ public class ActionCreator implements play.http.ActionCreator {
     public Action createAction(Http.Request request, Method actionMethod) {
         return new Action.Simple(){
             @Override
-            public CompletionStage<Result> call (Http.Request request1){
-                return delegate.call(request1);
+            public CompletionStage<Result> call (Http.Request req){
+                return delegate.call(req);
             }
-
-
         };
     }
 }

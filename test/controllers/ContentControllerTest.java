@@ -11,6 +11,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import play.Application;
+import play.api.test.CSRFTokenHelper;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -55,6 +56,9 @@ public class ContentControllerTest {
     public void createContentOK() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         Http.RequestBuilder request = Helper.buildRequest(POST, BEARER_Token, JsonNodeDataContent, AuthURL);
+
+        request = CSRFTokenHelper.addCSRFToken(request);
+
         Result result = route(app, request);
         String resultStr = play.test.Helpers.contentAsString(result);
         JsonNode actualObj = mapper.readValue(resultStr, JsonNode.class);
