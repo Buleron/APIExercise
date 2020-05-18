@@ -24,29 +24,47 @@
 
 package jwt.filter;
 
+import akka.stream.Materializer;
+import jwt.JwtValidator;
+import models.collection.User;
+import models.exceptions.RequestException;
+import mongo.MongoDB;
+import oauth2.PlatformAttributes;
+import play.Logger;
+import play.i18n.MessagesApi;
+import play.libs.concurrent.HttpExecutionContext;
+import play.mvc.Filter;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.routing.HandlerDef;
+import play.routing.Router;
+import utils.DatabaseUtils;
+
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-import javax.inject.Inject;
-import akka.stream.Materializer;
-import jwt.JwtValidator;
-import jwt.VerifiedJwt;
-import play.Logger;
-import play.libs.F;
-import play.mvc.*;
-import play.routing.HandlerDef;
-import play.routing.Router;
 
+import static oauth2.AuthenticatedAction.getUser;
 import static play.mvc.Results.forbidden;
+import static utils.Constants.WRONG_TOKEN;
+
 
 public class JwtFilter extends Filter {
     private static final String HEADER_AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
-    private static final String ROUTE_MODIFIER_NO_JWT_FILTER_TAG = "noJwtFilter";
+    private static final String ROUTE_MODIFIER_NO_JWT_FILTER_TAG = "paKontroll";
     private static final String ERR_AUTHORIZATION_HEADER = "ERR_AUTHORIZATION_HEADER";
     private JwtValidator jwtValidator;
+
+    @Inject
+    MongoDB mongoDB;
+    @javax.inject.Inject
+    HttpExecutionContext context;
+    @com.google.inject.Inject
+    MessagesApi messagesApi;
 
     @Inject
     public JwtFilter(Materializer mat, JwtValidator jwtValidator) {
@@ -65,20 +83,23 @@ public class JwtFilter extends Filter {
             }
         }
 
-        Optional<String> authHeader =  requestHeader.getHeaders().get(HEADER_AUTHORIZATION);
+        Optional<String> authHeader = requestHeader.getHeaders().get(HEADER_AUTHORIZATION);
 
         if (!authHeader.filter(ah -> ah.contains(BEARER)).isPresent()) {
-            Logger.error("f=JwtFilter, error=authHeaderNotPresent");
+            Logger.of("f=JwtFilter, error=authHeaderNotPresent");
             return CompletableFuture.completedFuture(forbidden(ERR_AUTHORIZATION_HEADER));
         }
-
         String token = authHeader.map(ah -> ah.replace(BEARER, "")).orElse("");
-        F.Either<jwt.JwtValidator.Error, VerifiedJwt> res = jwtValidator.verify(token);
 
-        if (res.left.isPresent()) {
-            return CompletableFuture.completedFuture(forbidden(res.left.get().toString()));
-        }
-
-        return nextFilter.apply(requestHeader.withAttrs(requestHeader.attrs().put(Attrs.VERIFIED_JWT, res.right.get())));
+        return CompletableFuture.supplyAsync(() ->
+                getUser(token, jwtValidator, mongoDB), context.current())
+                .thenCompose((user) -> {
+                    Http.RequestHeader authUser = requestHeader.addAttr(PlatformAttributes.AUTHENTICATED_USER, user);
+                    Http.RequestHeader reqHeader = authUser.withAttrs(authUser.attrs().put(PlatformAttributes.VERIFIED_JWT, token));
+                    return nextFilter.apply(reqHeader);
+                }).exceptionally((exception) -> {
+                    exception.printStackTrace();
+                    return DatabaseUtils.resultFromThrowable(exception, messagesApi);
+                });
     }
 }
